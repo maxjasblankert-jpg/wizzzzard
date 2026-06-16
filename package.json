@@ -1,0 +1,26 @@
+{
+  "name": "wizzzzard",
+  "version": "1.0.0",
+  "description": "Wizard Multiplayer Card Game App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build:vercel": "node scripts/build-vercel.js",
+    "test": "node test.js",
+    "firebase:login": "npx firebase-tools login",
+    "firebase:setup": "node scripts/setup-firebase.js",
+    "firebase:rules": "npx firebase-tools deploy --only firestore:rules",
+    "deploy:vercel": "npx vercel deploy --prod --yes"
+  },
+  "devDependencies": {
+    "firebase-tools": "^13.0.0"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.16.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

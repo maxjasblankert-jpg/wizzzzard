@@ -1,0 +1,816 @@
+/* ═══════════════════════════════════════════════════════════════
+   GRIMOIRE STEAMPUNK — Dark fantasy presentation overlay
+   Hand-painted textures · Brass mechanisms · Aged parchment cards
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --grimoire-obsidian: #0c0a0f;
+  --grimoire-burgundy: #2a1218;
+  --grimoire-brass: #b8860b;
+  --grimoire-brass-light: #d4a843;
+  --grimoire-brass-dark: #6b4e12;
+  --grimoire-gold: #c9a84c;
+  --grimoire-gold-aged: #a88a3a;
+  --grimoire-emerald: #1a4a32;
+  --grimoire-emerald-glow: #2d6a4a;
+  --grimoire-parchment: #e8dcc4;
+  --grimoire-parchment-dark: #c4b08a;
+  --grimoire-leather: #2a1810;
+  --grimoire-midnight: #12101a;
+  --font-grimoire-num: 'Cormorant Garamond', 'Cinzel', serif;
+  --card-num-size: 3.5rem;
+  --card-num-size-played: 2.3rem;
+  --card-num-size-mini: 2.2rem;
+}
+
+/* ─── Ambient environment ─── */
+#game-board.active .table-play-area {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 48%, rgba(180, 120, 40, 0.08) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(26, 74, 50, 0.12) 0%, transparent 42%),
+    linear-gradient(180deg, #0a080c 0%, #12101a 40%, #0c0a0f 100%);
+}
+
+.mystic-steampunk-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background:
+    repeating-conic-gradient(from 0deg at 50% 50%, rgba(184, 134, 11, 0.04) 0deg 15deg, transparent 15deg 30deg),
+    radial-gradient(circle at 50% 50%, rgba(42, 18, 24, 0.5) 0%, transparent 65%);
+}
+
+.mystic-clock-motifs {
+  position: absolute;
+  inset: 5%;
+  border-radius: 50%;
+  opacity: 0.12;
+  background:
+    radial-gradient(circle, transparent 58%, rgba(184, 134, 11, 0.25) 59%, rgba(184, 134, 11, 0.08) 62%, transparent 63%),
+    repeating-conic-gradient(from 0deg, rgba(184, 134, 11, 0.15) 0deg 6deg, transparent 6deg 30deg);
+  mask-image: radial-gradient(circle, #000 40%, transparent 72%);
+}
+
+.mystic-fog {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 28%;
+  pointer-events: none;
+  filter: blur(28px);
+  opacity: 0.55;
+}
+
+.mystic-fog-left {
+  left: 0;
+  background: linear-gradient(90deg, rgba(18, 12, 20, 0.85) 0%, transparent 100%);
+}
+
+.mystic-fog-right {
+  right: 0;
+  background: linear-gradient(270deg, rgba(18, 12, 20, 0.85) 0%, transparent 100%);
+}
+
+.mystic-dust-particles {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(255, 220, 160, 0.12) 0%, transparent 0.4%),
+    radial-gradient(circle at 85% 20%, rgba(255, 220, 160, 0.1) 0%, transparent 0.35%),
+    radial-gradient(circle at 45% 75%, rgba(255, 220, 160, 0.08) 0%, transparent 0.3%),
+    radial-gradient(circle at 72% 62%, rgba(255, 220, 160, 0.09) 0%, transparent 0.32%),
+    radial-gradient(circle at 28% 58%, rgba(255, 220, 160, 0.07) 0%, transparent 0.28%);
+  animation: dust-float 12s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes dust-float {
+  0% { opacity: 0.5; transform: translateY(0); }
+  100% { opacity: 0.75; transform: translateY(-6px); }
+}
+
+.mystic-warm-glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 55%;
+  height: 50%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 180, 80, 0.12) 0%, rgba(45, 106, 74, 0.08) 35%, transparent 68%);
+  pointer-events: none;
+  z-index: 1;
+  animation: warm-pulse 5s ease-in-out infinite alternate;
+}
+
+@keyframes warm-pulse {
+  0% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.96); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1.04); }
+}
+
+/* Side circuit / arcane trace lines */
+.mystic-circuit-traces {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.2;
+  background:
+    linear-gradient(90deg, rgba(184, 134, 11, 0.08) 0%, transparent 18%, transparent 82%, rgba(184, 134, 11, 0.08) 100%),
+    repeating-linear-gradient(0deg, transparent 0 47px, rgba(90, 160, 110, 0.06) 47px 48px),
+    repeating-linear-gradient(90deg, transparent 0 47px, rgba(90, 160, 110, 0.05) 47px 48px);
+  mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, transparent 30%, #000 55%, transparent 88%);
+}
+
+.mystic-circuit-traces::before,
+.mystic-circuit-traces::after {
+  content: '';
+  position: absolute;
+  top: 12%;
+  bottom: 12%;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, rgba(184, 134, 11, 0.25) 20%, rgba(90, 160, 110, 0.2) 50%, rgba(184, 134, 11, 0.25) 80%, transparent);
+  box-shadow: 0 0 12px rgba(90, 160, 110, 0.15);
+}
+
+.mystic-circuit-traces::before { left: 8%; }
+.mystic-circuit-traces::after { right: 8%; }
+
+/* Hide legacy cyber-only layers */
+.mystic-rune-border,
+.mystic-particles { display: none !important; }
+
+/* ─── Stone / wood medallion outer ring ─── */
+.mystic-stone-medallion {
+  inset: -5%;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(74, 58, 42, 0.95) 0%, rgba(34, 24, 18, 0.98) 50%, rgba(16, 10, 8, 1) 100%),
+    repeating-linear-gradient(88deg, transparent 0 5px, rgba(0, 0, 0, 0.12) 5px 6px),
+    linear-gradient(155deg, #4a3020 0%, #2a1810 45%, #140c08 100%);
+  box-shadow:
+    inset 0 0 50px rgba(0, 0, 0, 0.7),
+    inset 0 2px 0 rgba(255, 220, 180, 0.06),
+    0 0 0 3px rgba(107, 78, 18, 0.35),
+    0 14px 48px rgba(0, 0, 0, 0.65);
+}
+
+.mystic-corner::before,
+.mystic-corner::after {
+  background: linear-gradient(135deg, #d8dce4 0%, #8a949e 40%, #b8c0c8 60%, #5a6470 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 0 8px rgba(184, 134, 11, 0.2);
+}
+
+/* ─── Gear mechanism under glass ─── */
+.mystic-gear-mechanism {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  z-index: 1;
+  background:
+    repeating-conic-gradient(from 8deg, rgba(184, 134, 11, 0.45) 0deg 5deg, rgba(90, 58, 12, 0.75) 5deg 10deg),
+    radial-gradient(circle at 50% 50%, rgba(60, 40, 12, 0.9) 0%, rgba(30, 20, 8, 0.95) 100%);
+  mask-image: radial-gradient(circle, #000 55%, transparent 72%);
+  animation: gear-slow-spin 120s linear infinite;
+}
+
+.mystic-gear-mechanism::before {
+  content: '';
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  border: 4px solid rgba(122, 90, 18, 0.5);
+  background: repeating-conic-gradient(from 0deg, rgba(184, 134, 11, 0.3) 0deg 8deg, transparent 8deg 16deg);
+  animation: gear-slow-spin 80s linear infinite reverse;
+}
+
+.mystic-gear-mechanism::after {
+  content: '';
+  position: absolute;
+  inset: 32%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 22deg, rgba(212, 168, 67, 0.35) 0deg 4deg, rgba(70, 45, 10, 0.6) 4deg 8deg);
+  animation: gear-slow-spin 45s linear infinite;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes gear-slow-spin {
+  to { transform: rotate(360deg); }
+}
+
+.mystic-glass-portal {
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  z-index: 4;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.14) 0%, transparent 28%),
+    radial-gradient(circle at 50% 50%, rgba(180, 200, 220, 0.06) 0%, transparent 55%);
+  border: 1px solid rgba(200, 210, 225, 0.12);
+  box-shadow:
+    inset 0 0 40px rgba(255, 255, 255, 0.04),
+    inset 0 -20px 40px rgba(0, 0, 0, 0.25);
+}
+
+/* ─── Brass gear ring ─── */
+.mystic-gear-ring {
+  inset: 3%;
+  background:
+    repeating-conic-gradient(from 0deg, rgba(184, 134, 11, 0.5) 0deg 5deg, rgba(60, 40, 10, 0.85) 5deg 10deg);
+  mask-image: radial-gradient(circle, transparent 64%, #000 67%, #000 79%, transparent 82%);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+  animation: gear-slow-spin 100s linear infinite;
+  z-index: 2;
+}
+
+.mystic-gear-ring::after {
+  border: 2px solid rgba(122, 90, 18, 0.45);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ─── Etched rune ring (subtle emerald, not neon) ─── */
+.mystic-rune-ring {
+  inset: 12%;
+  border: 2px solid rgba(45, 106, 74, 0.45);
+  box-shadow:
+    inset 0 0 30px rgba(26, 74, 50, 0.2),
+    0 0 20px rgba(45, 106, 74, 0.15);
+  animation: rune-glow 4s ease-in-out infinite alternate;
+  z-index: 5;
+}
+
+.mystic-rune-ring::after {
+  content: '';
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(45, 106, 74, 0.22) 0%, rgba(26, 74, 50, 0.08) 55%, transparent 72%);
+  box-shadow: 0 0 40px rgba(45, 106, 74, 0.12);
+  pointer-events: none;
+}
+
+.mystic-rune-ring::before {
+  content: 'ᚠ · ᚢ · ᚦ · ᚨ · ᚱ · ᚲ · ᚷ · ᚹ · ᚺ · ᚾ · ᛁ · ᛃ · ᛇ · ᛈ · ᛉ · ᛊ · ᛏ · ᛒ · ᛖ · ᛗ · ᛚ · ᛜ · ᛞ · ᛟ';
+  font-size: 0.48rem;
+  letter-spacing: 0.28em;
+  color: rgba(90, 160, 110, 0.55);
+  text-shadow: 0 0 6px rgba(45, 106, 74, 0.35);
+  transform: rotate(-8deg);
+}
+
+@keyframes rune-glow {
+  0% {
+    border-color: rgba(45, 106, 74, 0.32);
+    box-shadow: inset 0 0 24px rgba(26, 74, 50, 0.12), 0 0 14px rgba(45, 106, 74, 0.1);
+  }
+  100% {
+    border-color: rgba(60, 130, 90, 0.5);
+    box-shadow: inset 0 0 36px rgba(26, 74, 50, 0.22), 0 0 24px rgba(45, 106, 74, 0.2);
+  }
+}
+
+/* ─── Emerald leather play core ─── */
+#game-board.active .felt-drop-zone,
+.mystic-arena-core {
+  width: 56%;
+  height: 46%;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(45, 106, 74, 0.35) 0%, transparent 50%),
+    repeating-linear-gradient(92deg, rgba(0, 0, 0, 0.06) 0 3px, transparent 3px 8px),
+    radial-gradient(ellipse at 50% 36%, #1a4a32 0%, #0f2e1e 42%, #071810 78%, #040e08 100%);
+  box-shadow:
+    inset 0 0 80px rgba(0, 0, 0, 0.6),
+    inset 0 6px 36px rgba(45, 106, 74, 0.15);
+  z-index: 3;
+}
+
+#game-board.active .felt-table::before {
+  border: 2px solid rgba(107, 78, 18, 0.4);
+  box-shadow:
+    inset 0 0 100px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(184, 134, 11, 0.15);
+}
+
+/* ─── Trump gilded banner ─── */
+.mystic-trump-banner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.mystic-trump-banner .table-trump-label {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.32em;
+  color: rgba(255, 248, 235, 0.95);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 10px rgba(201, 168, 76, 0.2);
+  text-transform: uppercase;
+}
+
+.trump-job-card .card-filigree-frame {
+  border-color: rgba(200, 208, 220, 0.65) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 0 14px rgba(200, 208, 220, 0.2) !important;
+}
+
+.trump-job-card.suit-green {
+  background:
+    linear-gradient(180deg, rgba(232, 220, 196, 0.14) 0%, transparent 20%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.04) 0 2px, transparent 2px 5px),
+    linear-gradient(155deg, #0c2014 0%, #1a4028 50%, #245838 100%) !important;
+}
+
+.table-center-trump { z-index: 18; }
+
+.table-center-trump .mini-card {
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.55),
+    0 0 12px rgba(201, 168, 76, 0.15) !important;
+}
+
+/* ─── Action banner ─── */
+#game-board.active .action-banner-box {
+  background: linear-gradient(90deg, transparent, rgba(20, 16, 12, 0.9), transparent);
+  border-top: 1px solid rgba(184, 134, 11, 0.15);
+  border-bottom: 1px solid rgba(184, 134, 11, 0.15);
+  padding: 7px 14px;
+}
+
+#game-board.active #action-banner-text {
+  font-family: var(--font-display);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(232, 220, 196, 0.9);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+#game-board.active .action-banner-box.glow-pulse {
+  animation: banner-warm-pulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes banner-warm-pulse {
+  0% { box-shadow: inset 0 0 16px rgba(180, 120, 40, 0.04); }
+  100% { box-shadow: inset 0 0 24px rgba(45, 106, 74, 0.1); }
+}
+
+/* ─── Player plaques (hide hologram podiums) ─── */
+.bot-podium { display: none !important; }
+
+.table-seat-wrap {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 25;
+}
+
+#game-board.active .table-seat {
+  background:
+    linear-gradient(165deg, rgba(32, 24, 18, 0.94) 0%, rgba(18, 14, 10, 0.96) 100%);
+  border: 1.5px solid rgba(184, 134, 11, 0.35);
+  border-radius: 8px;
+  padding: 7px 14px;
+  min-width: 108px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 235, 190, 0.08),
+    0 4px 18px rgba(0, 0, 0, 0.65);
+  backdrop-filter: none;
+}
+
+#game-board.active .table-seat.is-bot {
+  border-color: rgba(168, 138, 72, 0.4);
+}
+
+#game-board.active .table-seat.active-turn {
+  border-color: var(--grimoire-gold);
+  box-shadow:
+    0 0 16px rgba(201, 168, 76, 0.25),
+    inset 0 0 12px rgba(201, 168, 76, 0.06),
+    0 4px 18px rgba(0, 0, 0, 0.65);
+}
+
+#game-board.active .table-seat-name {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(232, 220, 196, 0.92);
+}
+
+#game-board.active .table-seat-bidwon {
+  font-family: var(--font-grimoire-num);
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: transparent;
+  color: var(--grimoire-gold-aged);
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  border-top: 1px solid rgba(184, 134, 11, 0.2);
+  padding-top: 3px;
+  margin-top: 2px;
+  border-radius: 0;
+}
+
+#game-board.active .table-seat-bot-tag {
+  color: rgba(200, 170, 110, 0.85);
+  background: rgba(60, 44, 20, 0.5);
+  border-color: rgba(184, 134, 11, 0.35);
+}
+
+.lead-wax-seal {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px 3px;
+  font-family: var(--font-display);
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2a1810;
+  background:
+    radial-gradient(circle at 30% 25%, #d4a843 0%, #a67c12 45%, #8b6914 100%);
+  border: 1px solid rgba(107, 78, 18, 0.6);
+  border-radius: 3px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 235, 190, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.25),
+    0 2px 6px rgba(0, 0, 0, 0.45);
+  transform: rotate(-2deg);
+}
+
+/* ─── Parchment grimoire cards ─── */
+.card-unit.grimoire-card,
+.mini-card.grimoire-card {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.card-unit.grimoire-card::before {
+  background:
+    radial-gradient(circle at 24% 14%, rgba(255, 255, 255, 0.1), transparent 44%),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.04) 0%, transparent 42%);
+}
+
+.card-vignette {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
+}
+
+.card-filigree-frame {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 4;
+  border: 3px solid rgba(184, 134, 11, 0.45);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 235, 190, 0.12),
+    inset 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.corner-ornament {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: rgba(201, 168, 76, 0.75);
+  border-style: solid;
+}
+
+.corner-ornament-tl { top: 4px; left: 4px; border-width: 3px 0 0 3px; }
+.corner-ornament-tr { top: 4px; right: 4px; border-width: 3px 3px 0 0; }
+.corner-ornament-bl { bottom: 4px; left: 4px; border-width: 0 0 3px 3px; }
+.corner-ornament-br { bottom: 4px; right: 4px; border-width: 0 3px 3px 0; }
+
+.card-filigree-frame::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(255, 235, 190, 0.1);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.card-unit.grimoire-card.suit-blue {
+  background:
+    linear-gradient(180deg, rgba(232, 220, 196, 0.12) 0%, transparent 18%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0 2px, transparent 2px 6px),
+    linear-gradient(155deg, #0a1828 0%, #143858 50%, #1a5080 100%) !important;
+}
+
+.card-unit.grimoire-card.suit-green {
+  background:
+    linear-gradient(180deg, rgba(232, 220, 196, 0.1) 0%, transparent 18%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0 2px, transparent 2px 6px),
+    linear-gradient(155deg, #0a1810 0%, #1a4028 50%, #245838 100%) !important;
+}
+
+.card-unit.grimoire-card.suit-red {
+  background:
+    linear-gradient(180deg, rgba(232, 220, 196, 0.1) 0%, transparent 18%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0 2px, transparent 2px 6px),
+    linear-gradient(155deg, #180808 0%, #501818 50%, #782820 100%) !important;
+}
+
+.card-unit.grimoire-card.suit-yellow {
+  background:
+    linear-gradient(180deg, rgba(232, 220, 196, 0.12) 0%, transparent 18%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0 2px, transparent 2px 6px),
+    linear-gradient(155deg, #181008 0%, #504018 50%, #786028 100%) !important;
+}
+
+.card-unit.grimoire-card.suit-purple {
+  background:
+    linear-gradient(180deg, rgba(232, 220, 196, 0.1) 0%, transparent 18%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0 2px, transparent 2px 6px),
+    linear-gradient(155deg, #100818 0%, #301848 50%, #482868 100%) !important;
+}
+
+.card-unit.grimoire-card.suit-indigo {
+  background:
+    linear-gradient(180deg, rgba(232, 220, 196, 0.1) 0%, transparent 18%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0 2px, transparent 2px 6px),
+    linear-gradient(155deg, #080818 0%, #181040 50%, #281858 100%) !important;
+}
+
+.card-unit.grimoire-card.suit-blue .card-filigree-frame { border-color: rgba(100, 160, 210, 0.55); }
+.card-unit.grimoire-card.suit-green .card-filigree-frame { border-color: rgba(90, 160, 100, 0.55); }
+.card-unit.grimoire-card.suit-red .card-filigree-frame { border-color: rgba(200, 100, 80, 0.55); }
+.card-unit.grimoire-card.suit-yellow .card-filigree-frame { border-color: rgba(200, 160, 60, 0.55); }
+.card-unit.grimoire-card.suit-purple .card-filigree-frame { border-color: rgba(160, 100, 180, 0.55); }
+.card-unit.grimoire-card.suit-indigo .card-filigree-frame { border-color: rgba(120, 90, 180, 0.55); }
+
+.card-unit.grimoire-card .card-inner-border {
+  inset: 16px 12px;
+  border: 1px solid rgba(232, 220, 196, 0.12);
+  border-radius: 6px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-unit.grimoire-card .card-corner-tl { top: 2px; left: 4px; }
+.card-unit.grimoire-card .card-corner-br { bottom: 2px; right: 4px; }
+
+.card-unit.grimoire-card .card-corner .card-num {
+  font-family: var(--font-grimoire-num);
+  font-size: var(--card-num-size) !important;
+  font-weight: 700;
+  line-height: 0.9;
+  color: #fff8e8;
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.95),
+    0 3px 12px rgba(0, 0, 0, 0.65),
+    0 0 2px rgba(201, 168, 76, 0.35);
+}
+
+.card-art-layer {
+  position: absolute;
+  inset: 12%;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+}
+
+.card-art-layer.mystic-art-standard {
+  background: radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.06) 0%, transparent 55%);
+  opacity: 0.4;
+}
+
+.card-art-layer.mystic-art-water-3 {
+  background:
+    radial-gradient(ellipse at 50% 85%, rgba(30, 120, 180, 0.5) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(8, 30, 60, 0.6) 0%, rgba(20, 70, 120, 0.3) 100%);
+  opacity: 0.65;
+}
+
+.card-art-layer.mystic-art-nature-3 {
+  background:
+    radial-gradient(circle at 50% 55%, rgba(60, 140, 70, 0.35) 0%, transparent 50%),
+    linear-gradient(145deg, rgba(15, 45, 25, 0.65) 0%, rgba(40, 100, 55, 0.35) 100%);
+  opacity: 0.6;
+}
+
+.card-art-layer.mystic-art-fire-7 {
+  background:
+    radial-gradient(circle at 52% 28%, rgba(255, 160, 50, 0.55) 0%, transparent 38%),
+    linear-gradient(180deg, rgba(60, 12, 5, 0.7) 0%, rgba(140, 35, 10, 0.4) 100%);
+  opacity: 0.7;
+}
+
+.card-art-layer.mystic-art-serpent-10 {
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(40, 120, 110, 0.3) 0%, transparent 55%),
+    conic-gradient(from 30deg, rgba(15, 50, 45, 0.5), rgba(60, 130, 120, 0.25), rgba(15, 50, 45, 0.5));
+  opacity: 0.55;
+}
+
+.card-art-layer.mystic-art-cosmic-11 {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(40, 15, 70, 0.85) 0%, rgba(80, 40, 120, 0.45) 100%);
+  opacity: 0.75;
+}
+
+.card-art-layer.mystic-art-jester {
+  background: radial-gradient(circle at 50% 45%, rgba(80, 20, 60, 0.4) 0%, rgba(15, 8, 20, 0.85) 100%);
+  opacity: 0.7;
+}
+
+.card-art-layer.mystic-art-wizard {
+  background: radial-gradient(circle at 50% 40%, rgba(180, 130, 40, 0.35) 0%, rgba(30, 20, 5, 0.8) 100%);
+  opacity: 0.65;
+}
+
+/* SVG illustrations */
+.card-illustration {
+  position: absolute;
+  inset: 22% 10% 26%;
+  z-index: 2;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-svg-art {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+}
+
+.card-center-icon-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.card-unit.grimoire-card.card-val-1 {
+  background: linear-gradient(155deg, #120818 0%, #281038 50%, #180820 100%) !important;
+  filter: brightness(0.9);
+}
+
+.card-unit.grimoire-card.card-val-1 .card-filigree-frame {
+  border-color: rgba(180, 100, 160, 0.5);
+}
+
+.card-unit.grimoire-card.card-val-15 {
+  box-shadow:
+    0 0 20px rgba(201, 168, 76, 0.35),
+    0 4px 18px rgba(0, 0, 0, 0.55) !important;
+  animation: wizard-card-glow 2.4s ease-in-out infinite alternate;
+}
+
+.card-unit.grimoire-card.card-val-15 .card-filigree-frame {
+  border-color: rgba(201, 168, 76, 0.7);
+}
+
+.card-unit.grimoire-card.is-trump-color {
+  border: 2px solid var(--grimoire-gold) !important;
+  box-shadow:
+    0 0 0 1px rgba(201, 168, 76, 0.35),
+    0 0 18px rgba(201, 168, 76, 0.35),
+    0 4px 18px rgba(0, 0, 0, 0.55) !important;
+}
+
+/* Hand hover + rim light */
+#game-board.active .my-hand-panel {
+  background:
+    linear-gradient(180deg, rgba(10, 8, 12, 0.96) 0%, rgba(18, 14, 10, 0.94) 100%);
+  border-top: 1px solid rgba(184, 134, 11, 0.2);
+  box-shadow:
+    inset 0 12px 40px rgba(180, 120, 40, 0.06),
+    0 -8px 32px rgba(201, 168, 76, 0.04);
+}
+
+#game-board.active .my-hand-panel::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 40%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(201, 168, 76, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+#game-board.active .my-hand-panel {
+  position: relative;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.turn-ready {
+  animation: turn-ready-glow 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes turn-ready-glow {
+  0% {
+    box-shadow:
+      0 0 12px rgba(255, 213, 80, 0.15),
+      0 4px 18px rgba(0, 0, 0, 0.55);
+  }
+  100% {
+    box-shadow:
+      0 0 22px rgba(255, 213, 80, 0.32),
+      0 0 8px rgba(201, 168, 76, 0.2),
+      0 4px 18px rgba(0, 0, 0, 0.55);
+  }
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.hand-card-hovered,
+#game-board.active .hand-cards-row .card-unit.grimoire-card:hover:not(.invalid-play):not(.hand-card-hovered) {
+  transform: translateY(-15px) scale(1.05) rotate(var(--fan-rot, 0deg));
+  box-shadow:
+    0 0 32px rgba(255, 213, 80, 0.45),
+    0 0 16px rgba(201, 168, 76, 0.3),
+    0 12px 28px rgba(0, 0, 0, 0.55) !important;
+  animation: none;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.playable-card.hand-card-hovered,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.playable-card:hover:not(.invalid-play) {
+  filter: brightness(1.06);
+}
+
+#game-board.active .center-board.glass-panel {
+  background: linear-gradient(180deg, rgba(8, 6, 10, 0.94) 0%, rgba(14, 10, 12, 0.9) 100%);
+}
+
+/* Mini trump card in center */
+.mini-card.grimoire-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.mini-card.grimoire-card .card-filigree-frame { border-width: 2px; }
+.mini-card.grimoire-card .card-inner-border { inset: 5px; }
+.mini-card.grimoire-card .card-illustration { inset: 14% 10% 18%; }
+.mini-card.grimoire-card .corner-ornament { width: 10px; height: 10px; }
+.mini-card.grimoire-card .card-corner-tl { top: 2px; left: 3px; }
+.mini-card.grimoire-card .card-corner-br { bottom: 2px; right: 3px; }
+.mini-card.grimoire-card .card-corner .card-num {
+  font-family: var(--font-grimoire-num);
+  font-size: var(--card-num-size-mini);
+  font-weight: 700;
+  line-height: 0.9;
+}
+
+.played-card-slot .card-unit.grimoire-card .card-corner .card-num {
+  font-size: var(--card-num-size-played) !important;
+  font-family: var(--font-grimoire-num) !important;
+}
+
+.played-card-slot .card-unit.grimoire-card .card-corner-tl { top: 2px; left: 3px; }
+.played-card-slot .card-unit.grimoire-card .card-corner-br { bottom: 2px; right: 3px; }
+
+.played-card-slot .card-unit.grimoire-card.card-play-settle {
+  filter: drop-shadow(0 0 14px rgba(79, 160, 220, 0.35));
+}
+
+.played-card-slot .card-unit.grimoire-card.card-val-1.card-play-settle .card-filigree-frame {
+  box-shadow:
+    inset 0 0 12px rgba(79, 160, 220, 0.15),
+    0 0 20px rgba(79, 160, 220, 0.4) !important;
+}
+
+.played-card-slot .card-unit.grimoire-card .card-illustration {
+  inset: 24% 8% 28%;
+}
+
+.mini-card.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  color: rgba(201, 168, 76, 0.5);
+  background: rgba(20, 16, 12, 0.9) !important;
+  border: 2px dashed rgba(184, 134, 11, 0.35) !important;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --card-num-size: 2.8rem;
+    --card-num-size-played: 1.85rem;
+    --card-num-size-mini: 1.75rem;
+  }
+
+  .mystic-rune-ring::before {
+    font-size: 0.38rem;
+    letter-spacing: 0.18em;
+  }
+}

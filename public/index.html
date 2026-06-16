@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wizard — Real-Time Multiplayer Shared Board</title>
+  <!-- Google Fonts: Cinzel + Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mystic-cyber.css">
+  <!-- Chart.js for premium visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="app-container">
+
+    <!-- Centered app frame: header + tabs + panels -->
+    <div class="app-frame">
+      <header class="page-header">
+        <h1 class="page-title">WIZARD</h1>
+        <div class="page-divider"><span class="divider-star">✦</span></div>
+        <p class="page-subtitle">Real-Time Multiplayer Card Game</p>
+      </header>
+
+      <nav class="main-tab-bar lobby-tabs" aria-label="Main navigation">
+        <button id="btn-tab-create" type="button" class="tab-btn active" onclick="switchMainTab('create')">Create</button>
+        <button id="btn-tab-join" type="button" class="tab-btn" onclick="switchMainTab('join')">Join</button>
+        <button id="btn-tab-ingame" type="button" class="tab-btn" onclick="switchMainTab('ingame')">In Game</button>
+        <button id="btn-tab-scores" type="button" class="tab-btn" onclick="switchMainTab('scores')">Scores</button>
+      </nav>
+
+      <div class="app-panels">
+    <!-- LOBBY FORMS: Create & Join -->
+    <section id="lobby-screen" class="parchment-card glass-panel active">
+
+      <!-- Create Room Form -->
+      <div id="lobby-create-form" class="lobby-form-content active">
+        <div class="form-group">
+          <label for="input-create-name">Your Display Name</label>
+          <input type="text" id="input-create-name" placeholder="Enter your name" maxlength="15">
+        </div>
+
+        <div class="form-group">
+          <label>Profile Emoji</label>
+          <div id="create-emoji-picker" class="emoji-picker"></div>
+          <input type="hidden" id="input-create-emoji" value="🧙">
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="select-player-count">Players Count</label>
+            <select id="select-player-count">
+              <option value="2">2 Players (37 Rounds)</option>
+              <option value="3" selected>3 Players (25 Rounds)</option>
+              <option value="4">4 Players (18 Rounds)</option>
+              <option value="5">5 Players (15 Rounds)</option>
+              <option value="6">6 Players (12 Rounds)</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="select-game-mode">Deck Mode</label>
+            <select id="select-game-mode" onchange="updateModeWarning()">
+              <option value="normal" selected>Normal (60 Cards, 4 Suits)</option>
+              <option value="purple">Purple Mode (75 Cards, 5 Suits)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="purple-mode-warning" class="warning-text hidden">
+          ⚠️ Purple Mode adds a 5th suit (purple). With 3 players this creates 25 rounds — warn players it will be a long game!
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label class="switch-label">
+            <input type="checkbox" id="check-hook-rule" checked>
+            <span class="switch-slider"></span>
+          </label>
+          <div class="checkbox-text">
+            <span class="checkbox-title">Enable Hook Rule</span>
+            <span class="checkbox-desc">Last bidder cannot make total bids equal to tricks available.</span>
+          </div>
+        </div>
+
+        <button id="btn-create-room" class="btn btn-primary btn-large" onclick="createRoom()">Create Room</button>
+      </div>
+
+      <!-- Join Room Form -->
+      <div id="lobby-join-form" class="lobby-form-content">
+        <div class="form-group">
+          <label for="input-join-code">Room Code</label>
+          <input type="text" id="input-join-code" class="input-room-code" placeholder="WIZD" maxlength="4">
+        </div>
+
+        <div class="form-group">
+          <label for="input-join-name">Your Display Name</label>
+          <input type="text" id="input-join-name" placeholder="Enter your name" maxlength="15">
+        </div>
+
+        <div class="form-group">
+          <label>Profile Emoji</label>
+          <div id="join-emoji-picker" class="emoji-picker"></div>
+          <input type="hidden" id="input-join-emoji" value="🧝">
+        </div>
+
+        <button id="btn-join-room" class="btn btn-action btn-large" onclick="joinRoom()">Join Room</button>
+      </div>
+    </section>
+
+    <!-- SCORES PANEL: Calculator + Past Games -->
+    <section id="scores-panel" class="parchment-card glass-panel">
+      <nav class="main-tab-bar scores-sub-tabs" style="margin-bottom: 16px;">
+        <button id="btn-tab-calc" type="button" class="tab-btn active" onclick="switchScoresSubTab('calc')">Tracker</button>
+        <button id="btn-tab-history" type="button" class="tab-btn" onclick="switchScoresSubTab('history')">Past Games</button>
+      </nav>
+
+      <div id="lobby-calc-form" class="lobby-form-content active">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="select-calc-player-count">Number of Players</label>
+            <select id="select-calc-player-count" onchange="generateCalcPlayerInputs()">
+              <option value="2">2 Players (37 Rounds)</option>
+              <option value="3" selected>3 Players (25 Rounds)</option>
+              <option value="4">4 Players (18 Rounds)</option>
+              <option value="5">5 Players (15 Rounds)</option>
+              <option value="6">6 Players (12 Rounds)</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="select-calc-game-mode">Deck Mode</label>
+            <select id="select-calc-game-mode" onchange="updateCalcModeWarning()">
+              <option value="normal" selected>Normal (60 Cards, 4 Suits)</option>
+              <option value="purple">Purple Mode (75 Cards, 5 Suits)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="calc-purple-mode-warning" class="warning-text hidden">
+          ⚠️ Purple Mode adds a 5th suit (purple). With 3 players this creates 25 rounds!
+        </div>
+
+        <div class="form-group">
+          <label>Player Display Names</label>
+          <div id="calc-player-names-container" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Dynamically generated player name inputs -->
+          </div>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label class="switch-label">
+            <input type="checkbox" id="check-calc-hook-rule" checked>
+            <span class="switch-slider"></span>
+          </label>
+          <div class="checkbox-text">
+            <span class="checkbox-title">Enable Hook Rule</span>
+            <span class="checkbox-desc">The last bidder cannot make total bids equal to tricks available.</span>
+          </div>
+        </div>
+
+        <button id="btn-start-calc" class="btn btn-primary btn-large" onclick="startCalculator()">Start Score Tracker</button>
+      </div>
+
+      <div id="lobby-history-form" class="lobby-form-content">
+        <p class="scores-help-text">Games you played online are saved here. Search by room code.</p>
+        <div class="form-group">
+          <label for="input-history-search">Search room code</label>
+          <input type="text" id="input-history-search" class="input-room-code" placeholder="ABCD" maxlength="4" oninput="loadPastGamesList()">
+        </div>
+        <div id="past-games-list" class="players-stats-container past-games-scroll">
+          <p class="empty-state-text">Loading past games…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- IN GAME: Waiting lobby -->
+    <section id="waiting-lobby" class="parchment-card glass-panel">
+      <div id="ingame-empty" class="ingame-empty-state hidden">
+        <p class="empty-state-text">Create or join a room to start playing.</p>
+        <button type="button" class="btn btn-secondary" onclick="switchMainTab('create')">Create Room</button>
+      </div>
+
+      <div id="waiting-lobby-content">
+      <div class="lobby-header-row">
+        <div class="room-code-chip">
+          <span class="room-code-chip-label">Room</span>
+          <span id="room-code-display" class="room-code-chip-value">----</span>
+          <button id="btn-copy-code" type="button" class="btn btn-icon btn-copy-chip" onclick="copyRoomCode()" title="Copy Room Code">📋</button>
+        </div>
+
+        <div class="room-info-badges">
+          <span id="badge-game-mode" class="badge">Normal Mode</span>
+          <span id="badge-hook-rule" class="badge">Hook Rule: ON</span>
+        </div>
+      </div>
+
+      <div class="players-list-section">
+        <h3>Connected Players (<span id="current-player-ratio">0/3</span>)</h3>
+        <div id="lobby-players-list" class="players-grid">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+        <div id="host-controls" class="host-controls hidden">
+        <p class="host-note">Only you (the Host) can start the game once everyone joins. You can also add AI bot players to practice by yourself.</p>
+        <div class="host-controls-row">
+          <button id="btn-add-bot" class="btn btn-secondary btn-large" onclick="addBot()">🤖 Add Bot</button>
+          <button id="btn-start-game" class="btn btn-action btn-large" onclick="startGame()" disabled>Start Game</button>
+        </div>
+      </div>
+      <div id="non-host-waiting" class="non-host-waiting">
+        <p class="waiting-note">Waiting for Host to start the game...</p>
+        <div class="loading-spinner"></div>
+      </div>
+      </div>
+    </section>
+      </div><!-- /.app-panels -->
+    </div><!-- /.app-frame -->
+
+    <!-- GAME BOARD SCREEN -->
+    <section id="game-board" class="game-container">
+
+      <!-- SIDEBAR: full height left column -->
+      <aside class="sidebar-panel glass-panel">
+          <div class="game-meta-compact">
+            <span id="txt-round-number" class="game-meta-round">Round 1 of 25</span>
+            <span class="game-meta-sep" aria-hidden="true">·</span>
+            <span class="game-meta-label">Room</span>
+            <span id="txt-room-code" class="game-meta-room">----</span>
+            <span id="txt-mode-badge" class="badge-mini">Normal</span>
+          </div>
+          <h3 class="panel-title">Players & Stats</h3>
+          <div id="players-stats-list" class="players-stats-container">
+            <!-- Dynamically populated players listing with current bids and tricks -->
+          </div>
+          
+          <div class="sidebar-divider"></div>
+
+          <div class="scoreboard-section">
+          <h3 class="panel-title">Scoreboard</h3>
+          <div class="scoreboard-scroll">
+            <table class="scoreboard-table">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Bid</th>
+                  <th>Won</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody id="scoreboard-body">
+                <!-- Dynamically populated score rows -->
+              </tbody>
+            </table>
+          </div>
+          </div>
+
+          <div id="host-end-game-section" class="host-end-game-section hidden">
+            <div class="sidebar-divider"></div>
+            <button id="btn-end-game" type="button" class="btn btn-danger btn-full" onclick="endGameEarly()">End Game Early</button>
+            <p class="host-end-game-note">Host only — ends the game now and shows final scores.</p>
+          </div>
+      </aside>
+
+      <!-- CENTER BOARD: Playing Space -->
+      <main class="center-board glass-panel">
+
+          <!-- Bidding panel: top strip only — hand stays visible in footer below -->
+          <div id="bid-selector-overlay" class="dashboard-overlay bid-panel-top hidden">
+            <div class="bid-panel-top-inner">
+              <div class="bid-overlay-trump" aria-label="Trump suit">
+                <span class="table-trump-label">Trump</span>
+                <div id="bid-trump-container" class="job-card-box"></div>
+              </div>
+              <div class="bid-panel-controls">
+                <h4 class="bid-overlay-title">Place Your Bid</h4>
+                <p id="bid-warning-msg" class="hook-warning hidden">⚠️ Hook rule active: You cannot bid X.</p>
+                <div class="bid-stepper-container">
+                  <button type="button" class="btn-bid-step" id="btn-bid-dec" onclick="changeBidSelection(-1)" aria-label="Decrease bid">−</button>
+                  <span id="txt-bid-selection" class="bid-stepper-value">0</span>
+                  <button type="button" class="btn-bid-step" id="btn-bid-inc" onclick="changeBidSelection(1)" aria-label="Increase bid">+</button>
+                </div>
+                <button type="button" id="btn-confirm-bid" class="btn btn-action btn-large bid-confirm-btn" onclick="confirmBidSelection()">Confirm Bid</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- State banner / Alert Banner -->
+          <div id="action-banner" class="action-banner-box">
+            <span id="action-banner-text">Waiting for game to initialize...</span>
+          </div>
+
+          <!-- Dark fantasy steampunk play arena -->
+          <div id="wizard-felt-table" class="card-table-container mystic-arena grimoire-arena">
+            <div class="table-play-area">
+              <div class="mystic-ambient" aria-hidden="true">
+                <div class="mystic-steampunk-bg"></div>
+                <div class="mystic-circuit-traces"></div>
+                <div class="mystic-clock-motifs"></div>
+                <div class="mystic-fog mystic-fog-left"></div>
+                <div class="mystic-fog mystic-fog-right"></div>
+                <div class="mystic-dust-particles"></div>
+                <div class="mystic-warm-glow"></div>
+              </div>
+              <div class="table-felt-wrap">
+                <div class="mystic-mahogany-ring mystic-stone-medallion" aria-hidden="true">
+                  <div class="mystic-corner mystic-corner-tl"></div>
+                  <div class="mystic-corner mystic-corner-tr"></div>
+                  <div class="mystic-corner mystic-corner-bl"></div>
+                  <div class="mystic-corner mystic-corner-br"></div>
+                </div>
+                <div class="felt-table mystic-table">
+                  <div class="mystic-gear-mechanism" aria-hidden="true"></div>
+                  <div class="mystic-glass-portal" aria-hidden="true"></div>
+                  <div class="mystic-gear-ring" aria-hidden="true"></div>
+                  <div class="mystic-rune-ring" aria-hidden="true"></div>
+                  <div class="felt-drop-zone mystic-arena-core" aria-hidden="true"></div>
+                  <div id="trick-cards-grid" class="trick-cards-grid"></div>
+                  <div class="table-center-trump">
+                    <div class="mystic-trump-banner">
+                      <span class="table-trump-label">Trump</span>
+                      <div id="job-card-container" class="job-card-box"></div>
+                    </div>
+                  </div>
+                </div>
+                <div id="table-seats-container" class="table-seats-layer"></div>
+              </div>
+            </div>
+          </div>
+
+        </main>
+
+      <!-- HAND: compact strip, right column only -->
+      <footer class="game-hand-footer bottom-console-grid bottom-console-hand-only">
+        <div class="my-hand-panel glass-panel">
+          <div id="player-hand-container" class="hand-cards-row">
+            <!-- Cards only this player can see -->
+            <div class="empty-hand-placeholder">Cards will be dealt here.</div>
+          </div>
+        </div>
+      </footer>
+    </section>
+
+    <!-- OFFLINE CALCULATOR WORKSPACE -->
+    <section id="calculator-workspace" class="game-container">
+      <!-- Top Status & Control Bar -->
+      <div class="top-status-bar glass-panel">
+        <div class="game-info-cell">
+          <span class="label">ROUND</span>
+          <span id="calc-txt-round" class="val">Round 1</span>
+          <span id="calc-txt-mode-badge" class="badge-mini normal">Normal Mode</span>
+        </div>
+        <div class="job-card-wrapper">
+          <div class="job-card-label" style="color: var(--primary);">OFFLINE SCORE TRACKER</div>
+          <span style="font-size: 0.8rem; color: #b2bec3;">Manual Input Mode</span>
+        </div>
+        <div class="room-code-cell">
+          <button class="btn btn-secondary btn-icon" onclick="undoCalcRound()" id="btn-calc-undo" title="Undo Last Round" style="margin-right: 10px; width: auto; padding: 8px 16px;">↩️ Undo</button>
+          <button class="btn btn-primary" onclick="exitCalculator()">Exit Tracker</button>
+        </div>
+      </div>
+
+      <!-- Main Workspace Grid -->
+      <div class="main-play-grid">
+        <!-- Sidebar: Leaderboard & History & Graphs Toggle -->
+        <aside class="sidebar-panel glass-panel" style="gap: 20px;">
+          <div class="lobby-tabs" style="border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 0; display: flex;">
+            <button id="btn-calc-tab-stats" class="tab-btn active" onclick="switchCalcSidebarTab('stats')" style="font-size: 0.9rem; padding: 8px;">Leaderboard</button>
+            <button id="btn-calc-tab-graph" class="tab-btn" onclick="switchCalcSidebarTab('graph')" style="font-size: 0.9rem; padding: 8px;">Score Graph</button>
+          </div>
+
+          <!-- Tab 1: Leaderboard & History -->
+          <div id="calc-sidebar-stats" class="calc-sidebar-tab-content active" style="display: flex; flex-direction: column; gap: 15px; height: 100%; min-height: 0; width: 100%;">
+            <div id="calc-leaderboard-container" class="players-stats-container" style="flex: 1; min-height: 120px;">
+              <!-- Dynamic Leaderboard list -->
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            
+            <h3 class="panel-title" style="font-size: 0.95rem;">Round History</h3>
+            <div class="scoreboard-scroll" style="flex: 1; min-height: 150px;">
+              <table class="scoreboard-table" style="font-size: 0.8rem; width: 100%;">
+                <thead>
+                  <tr id="calc-history-headers">
+                    <th style="padding: 6px 8px;">Rnd</th>
+                    <!-- Dynamic player column headers -->
+                  </tr>
+                </thead>
+                <tbody id="calc-history-body">
+                  <!-- Dynamic round records -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab 2: Graphs -->
+          <div id="calc-sidebar-graph" class="calc-sidebar-tab-content" style="display: none; height: 100%; min-height: 0; width: 100%;">
+            <div style="flex: 1; position: relative; min-height: 250px; width: 100%;">
+              <canvas id="calc-progression-chart"></canvas>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Right Panel: Bidding & Tricks Input Form -->
+        <main class="center-board glass-panel" style="display: flex; flex-direction: column; min-height: 0;">
+          <div class="action-banner-box" style="margin-bottom: 20px;">
+            <span id="calc-action-banner-text">Enter bids and tricks won for Round 1</span>
+          </div>
+
+          <div id="calc-inputs-container" style="display: flex; flex-direction: column; gap: 15px; flex: 1; overflow-y: auto; padding-right: 5px;">
+            <!-- Generated dynamically: Player card with Bid & Trick inputs -->
+          </div>
+
+          <div class="sidebar-divider" style="margin: 15px 0;"></div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div id="calc-validation-msg" class="warning-text" style="background: rgba(192, 57, 43, 0.1); border-color: rgba(192, 57, 43, 0.3); color: #ff6b6b; padding: 10px 15px; margin: 0;">
+              ⚠️ Total tricks won must equal 1 (currently 0).
+            </div>
+            <button id="btn-calc-save-round" class="btn btn-success btn-large" onclick="saveCalcRound()" disabled>Save Round 1</button>
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <!-- ROUND SUMMARY & SCORES OVERLAY -->
+    <div id="overlay-round-summary" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-panel">
+        <h2 id="summary-round-title">Round Summary</h2>
+        <p class="summary-subtitle">Review the round results and sync with the external scorecard.</p>
+
+        <!-- Tabs for results vs chart -->
+        <div class="lobby-tabs" style="border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; display: flex;">
+          <button id="btn-summary-tab-table" class="tab-btn active" onclick="switchSummaryTab('table')" style="font-size: 0.95rem; padding: 8px;">Round Results</button>
+          <button id="btn-summary-tab-chart" class="tab-btn" onclick="switchSummaryTab('chart')" style="font-size: 0.95rem; padding: 8px;">Score Graph</button>
+        </div>
+
+        <div id="summary-tab-table-content" class="summary-tab-content active" style="width: 100%;">
+          <div class="summary-table-wrapper">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Bid</th>
+                  <th>Won</th>
+                  <th>Score Change</th>
+                  <th>New Score</th>
+                </tr>
+              </thead>
+              <tbody id="summary-table-body">
+                <!-- Dynamically populated summary of previous round -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sync-actions-row" style="margin-top: 15px;">
+            <button id="btn-copy-summary" class="btn btn-secondary" onclick="copyRoundSummaryData()">
+              Copy Round Summary for Excel Calculator 📋
+            </button>
+            <div id="copy-summary-success" class="copy-success-text hidden">✓ Copied to clipboard!</div>
+          </div>
+        </div>
+
+        <div id="summary-tab-chart-content" class="summary-tab-content" style="display: none; min-height: 250px; position: relative; width: 100%;">
+          <canvas id="multiplayer-summary-chart"></canvas>
+        </div>
+
+        <div class="modal-footer-actions">
+          <div id="host-next-round-section" class="hidden">
+            <p class="modal-host-note">Press below to deal the cards for the next round.</p>
+            <button id="btn-next-round" class="btn btn-success btn-large" onclick="triggerNextRound()">Start Next Round</button>
+          </div>
+          <div id="non-host-next-round-section">
+            <p class="modal-waiting-note" id="round-end-waiting-note">Waiting for Host to start the next round...</p>
+            <div id="round-end-waiting-spinner" class="loading-spinner mini"></div>
+            <p id="round-end-stuck-hint" class="pause-overlay-hint hidden">The host appears to be offline.</p>
+            <div class="pause-overlay-actions round-end-actions">
+              <button id="btn-round-end-abandon" type="button" class="btn btn-primary btn-large hidden" onclick="abandonStuckGame()">Return everyone to lobby</button>
+              <button id="btn-round-end-leave" type="button" class="btn btn-secondary btn-large" onclick="leaveCurrentGame()">Leave game</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTION PAUSED OVERLAY -->
+    <div id="overlay-pause" class="fullscreen-overlay paused hidden">
+      <div class="modal-card glass-panel text-center">
+        <h2 class="danger-title">⏸️ GAME PAUSED</h2>
+        <p id="pause-overlay-text">A player disconnected.</p>
+        <p id="pause-overlay-hint" class="pause-overlay-hint">You can wait for them to rejoin, or leave this game.</p>
+        <div id="pause-overlay-actions" class="pause-overlay-actions">
+          <button id="btn-pause-return-lobby" type="button" class="btn btn-primary btn-large hidden" onclick="returnEveryoneToLobby()">Return everyone to lobby</button>
+          <button id="btn-pause-leave-game" type="button" class="btn btn-secondary btn-large" onclick="leaveCurrentGame()">Leave game</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GAME OVER OVERLAY -->
+    <div id="overlay-game-over" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-panel text-center">
+        <h1 class="logo-text shine">🏆 GAME OVER 🏆</h1>
+        <h2 id="txt-game-winners" class="winners-title">Alice wins!</h2>
+        
+        <!-- Tabs for standings vs chart -->
+        <div class="lobby-tabs" style="border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; display: flex;">
+          <button id="btn-gameover-tab-standings" class="tab-btn active" onclick="switchGameOverTab('standings')" style="font-size: 0.95rem; padding: 8px;">Final Standings</button>
+          <button id="btn-gameover-tab-chart" class="tab-btn" onclick="switchGameOverTab('chart')" style="font-size: 0.95rem; padding: 8px;">Score Graph</button>
+        </div>
+
+        <div id="gameover-tab-standings-content" class="gameover-tab-content active" style="width: 100%;">
+          <div class="final-standings-box">
+            <h3>Final Scoreboard</h3>
+            <table class="final-scoreboard-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody id="final-scoreboard-body">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="gameover-tab-chart-content" class="gameover-tab-content" style="display: none; min-height: 250px; position: relative; width: 100%;">
+          <canvas id="multiplayer-gameover-chart"></canvas>
+        </div>
+
+        <button class="btn btn-primary btn-large" onclick="restartGame()" style="margin-top: 15px;">Back to Lobby</button>
+      </div>
+    </div>
+
+    <!-- PAST GAME DETAIL OVERLAY -->
+    <div id="overlay-past-game" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-panel" style="max-width: 720px; width: 100%;">
+        <h2 id="past-game-title" class="winners-title" style="font-size: 1.4rem; margin-bottom: 4px;">Room ABCD</h2>
+        <p id="past-game-subtitle" style="color: #b2bec3; font-size: 0.9rem; margin-bottom: 16px;"></p>
+        <div class="scoreboard-scroll" style="max-height: 280px; margin-bottom: 16px;">
+          <table class="scoreboard-table" style="width: 100%; font-size: 0.85rem;">
+            <thead id="past-game-table-head"></thead>
+            <tbody id="past-game-table-body"></tbody>
+          </table>
+        </div>
+        <div style="min-height: 220px; position: relative; width: 100%; margin-bottom: 16px;">
+          <canvas id="past-game-chart"></canvas>
+        </div>
+        <button class="btn btn-secondary btn-large" onclick="closePastGameOverlay()">Close</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="card-art.js"></script>
+  <script src="game-engine.js"></script>
+  <script src="firebase-game.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

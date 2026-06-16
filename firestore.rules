@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function roomData(roomCode) {
+      return get(/databases/$(database)/documents/rooms/$(roomCode)).data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isRoomMember(roomCode) {
+      return isSignedIn() && request.auth.uid in roomData(roomCode).playerIds;
+    }
+
+    function isRoomHost(roomCode) {
+      return isSignedIn() && roomData(roomCode).hostId == request.auth.uid;
+    }
+
+    match /rooms/{roomCode} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isRoomMember(roomCode) || isRoomHost(roomCode);
+      allow delete: if isRoomHost(roomCode);
+
+      match /players/{playerId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update: if isRoomMember(roomCode) || isRoomHost(roomCode);
+        allow delete: if isRoomHost(roomCode);
+      }
+
+      match /hands/{playerId} {
+        allow read: if isSignedIn()
+          && (request.auth.uid == playerId || isRoomHost(roomCode));
+        allow create, update: if isSignedIn()
+          && (request.auth.uid == playerId || isRoomHost(roomCode));
+        allow delete: if isRoomHost(roomCode);
+      }
+    }
+
+    match /completedGames/{gameId} {
+      allow read: if isSignedIn()
+        && request.auth.uid in resource.data.participants;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+    match /users/{userId}/gameHistory/{gameId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+  }
+}
