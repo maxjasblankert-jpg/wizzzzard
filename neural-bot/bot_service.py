@@ -125,6 +125,11 @@ def startup() -> None:
         _load_v6()
 
 
+@app.get("/")
+def root() -> dict[str, Any]:
+    return health()
+
+
 @app.get("/health")
 def health() -> dict[str, Any]:
     return {
