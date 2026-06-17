@@ -63,10 +63,16 @@
           <div class="form-group">
             <label for="select-game-mode">Deck Mode</label>
             <select id="select-game-mode" onchange="updateModeWarning()">
-              <option value="normal" selected>Normal (60 Cards, 4 Suits)</option>
+              <option value="standard" selected>Standard (Official — ML bots)</option>
+              <option value="normal">Normal (60 Cards, 4 Suits)</option>
               <option value="purple">Purple Mode (75 Cards, 5 Suits)</option>
             </select>
           </div>
+        </div>
+
+        <div id="neural-setup-hint" class="warning-text">
+          Champion bots need <strong>Standard (Official)</strong> mode and <strong>Hook Rule off</strong>.
+          v7: 3 or 4 players. v6: 3 players only. Requires the bot service running.
         </div>
 
         <div id="purple-mode-warning" class="warning-text hidden">
@@ -205,6 +211,14 @@
 
         <div id="host-controls" class="host-controls hidden">
         <p class="host-note">Only you (the Host) can start the game once everyone joins. You can also add AI bot players to practice by yourself.</p>
+        <div class="form-group">
+          <label for="select-bot-type">Bot type</label>
+          <select id="select-bot-type">
+            <option value="neural_v7" selected>Champion (v7)</option>
+            <option value="neural_v6">Champion (v6, 3p)</option>
+            <option value="heuristic">Practice Bot</option>
+          </select>
+        </div>
         <div class="host-controls-row">
           <button id="btn-add-bot" class="btn btn-secondary btn-large" onclick="addBot()">🤖 Add Bot</button>
           <button id="btn-start-game" class="btn btn-action btn-large" onclick="startGame()" disabled>Start Game</button>
@@ -560,8 +574,12 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
+  <script src="bot-env.js"></script>
   <script src="card-art.js"></script>
+  <script src="standard-rules.js"></script>
   <script src="game-engine.js"></script>
+  <script src="bot-config.js"></script>
+  <script src="bot-client.js"></script>
   <script src="firebase-game.js"></script>
   <script src="app.js"></script>
 </body>

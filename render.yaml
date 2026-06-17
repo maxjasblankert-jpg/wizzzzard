@@ -1,11 +1,14 @@
+# Render Blueprint — deploy bot service for Champion ML bots
+# Dashboard: New > Blueprint > connect GitHub repo > apply this file
 services:
   - type: web
-    name: wizzzzard
-    runtime: node
-    plan: free
-    buildCommand: npm install
-    startCommand: npm start
+    name: wizzzzard-bots
+    runtime: docker
+    rootDir: neural-bot
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /health
+    plan: free
     envVars:
-      - key: NODE_VERSION
-        value: 20
+      - key: PORT
+        value: "8001"

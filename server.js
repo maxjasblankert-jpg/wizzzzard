@@ -1,7 +1,12 @@
+require('./scripts/load-env');
+
 const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
+
+require('./public/game-engine.js');
+const { sortHand } = global.GameEngine;
 
 const app = express();
 const server = http.createServer(app);
@@ -353,6 +358,12 @@ wss.on('connection', (ws) => {
             return;
           }
 
+          const botType = data.botType || 'neural_v7';
+          if (botType !== 'heuristic' && room.mode !== 'standard') {
+            ws.send(JSON.stringify({ type: 'error', message: 'Champion bots require Standard mode.' }));
+            return;
+          }
+
           const botId = 'bot-' + Math.random().toString(36).substring(2, 9);
           const botNames = ['Merlin', 'Gandalf', 'Saruman', 'Dumbledore', 'Hermione', 'Voldemort', 'Radagast', 'Alatar', 'Pallando'];
           
@@ -378,7 +389,8 @@ wss.on('connection', (ws) => {
             hand: [],
             score: 0,
             roundScores: [],
-            isBot: true
+            isBot: true,
+            botType
           };
 
           room.players.push(botPlayer);
@@ -641,14 +653,9 @@ function startRound(room) {
     });
   }
 
-  // Sort hands: first by suit, then by value (descending) to help player UX
+  // Sort hands: 1s left, 2–14 middle, 15s right (by suit within each group)
   room.players.forEach(p => {
-    p.hand.sort((a, b) => {
-      if (a.suit !== b.suit) {
-        return a.suit.localeCompare(b.suit);
-      }
-      return b.value - a.value;
-    });
+    p.hand = sortHand(p.hand);
   });
 
   room.status = 'bidding';

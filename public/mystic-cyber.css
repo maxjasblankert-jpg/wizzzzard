@@ -537,18 +537,12 @@
     linear-gradient(155deg, #181008 0%, #504018 50%, #786028 100%) !important;
 }
 
-.card-unit.grimoire-card.suit-purple {
-  background:
-    linear-gradient(180deg, rgba(232, 220, 196, 0.1) 0%, transparent 18%),
-    repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0 2px, transparent 2px 6px),
-    linear-gradient(155deg, #100818 0%, #301848 50%, #482868 100%) !important;
-}
-
+.card-unit.grimoire-card.suit-purple,
 .card-unit.grimoire-card.suit-indigo {
   background:
     linear-gradient(180deg, rgba(232, 220, 196, 0.1) 0%, transparent 18%),
     repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0 2px, transparent 2px 6px),
-    linear-gradient(155deg, #080818 0%, #181040 50%, #281858 100%) !important;
+    linear-gradient(155deg, #100818 0%, #301848 50%, #482868 100%) !important;
 }
 
 .card-unit.grimoire-card.suit-blue .card-filigree-frame { border-color: rgba(100, 160, 210, 0.55); }
@@ -595,48 +589,64 @@
   opacity: 0.4;
 }
 
+.card-art-layer.mystic-art-water,
 .card-art-layer.mystic-art-water-3 {
   background:
-    radial-gradient(ellipse at 50% 85%, rgba(30, 120, 180, 0.5) 0%, transparent 55%),
-    linear-gradient(180deg, rgba(8, 30, 60, 0.6) 0%, rgba(20, 70, 120, 0.3) 100%);
-  opacity: 0.65;
-}
-
-.card-art-layer.mystic-art-nature-3 {
-  background:
-    radial-gradient(circle at 50% 55%, rgba(60, 140, 70, 0.35) 0%, transparent 50%),
-    linear-gradient(145deg, rgba(15, 45, 25, 0.65) 0%, rgba(40, 100, 55, 0.35) 100%);
+    radial-gradient(ellipse at 50% 80%, rgba(30, 120, 180, 0.45) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(8, 30, 60, 0.55) 0%, rgba(20, 70, 120, 0.25) 100%);
   opacity: 0.6;
 }
 
-.card-art-layer.mystic-art-fire-7 {
+.card-art-layer.mystic-art-nature,
+.card-art-layer.mystic-art-nature-3 {
   background:
-    radial-gradient(circle at 52% 28%, rgba(255, 160, 50, 0.55) 0%, transparent 38%),
-    linear-gradient(180deg, rgba(60, 12, 5, 0.7) 0%, rgba(140, 35, 10, 0.4) 100%);
-  opacity: 0.7;
-}
-
-.card-art-layer.mystic-art-serpent-10 {
-  background:
-    radial-gradient(ellipse at 50% 50%, rgba(40, 120, 110, 0.3) 0%, transparent 55%),
-    conic-gradient(from 30deg, rgba(15, 50, 45, 0.5), rgba(60, 130, 120, 0.25), rgba(15, 50, 45, 0.5));
+    radial-gradient(circle at 50% 55%, rgba(60, 140, 70, 0.35) 0%, transparent 50%),
+    linear-gradient(145deg, rgba(15, 45, 25, 0.6) 0%, rgba(40, 100, 55, 0.3) 100%);
   opacity: 0.55;
 }
 
+.card-art-layer.mystic-art-fire,
+.card-art-layer.mystic-art-fire-7 {
+  background:
+    radial-gradient(circle at 52% 35%, rgba(255, 140, 40, 0.5) 0%, transparent 42%),
+    linear-gradient(180deg, rgba(60, 12, 5, 0.65) 0%, rgba(140, 35, 10, 0.35) 100%);
+  opacity: 0.65;
+}
+
+.card-art-layer.mystic-art-light {
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 220, 100, 0.4) 0%, transparent 48%),
+    linear-gradient(180deg, rgba(50, 40, 8, 0.5) 0%, rgba(120, 90, 20, 0.28) 100%);
+  opacity: 0.6;
+}
+
+.card-art-layer.mystic-art-arcane,
 .card-art-layer.mystic-art-cosmic-11 {
   background:
-    radial-gradient(circle at 50% 50%, rgba(40, 15, 70, 0.85) 0%, rgba(80, 40, 120, 0.45) 100%);
-  opacity: 0.75;
+    radial-gradient(circle at 50% 45%, rgba(140, 60, 180, 0.4) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(25, 8, 40, 0.75) 0%, rgba(70, 30, 100, 0.4) 100%);
+  opacity: 0.65;
+}
+
+.card-art-layer.mystic-art-void,
+.card-art-layer.mystic-art-serpent-10 {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(40, 20, 80, 0.5) 0%, rgba(10, 5, 25, 0.85) 100%);
+  opacity: 0.65;
 }
 
 .card-art-layer.mystic-art-jester {
-  background: radial-gradient(circle at 50% 45%, rgba(80, 20, 60, 0.4) 0%, rgba(15, 8, 20, 0.85) 100%);
-  opacity: 0.7;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(120, 40, 100, 0.25) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.55) 0%, rgba(20, 8, 28, 0.95) 100%);
+  opacity: 0.85;
 }
 
 .card-art-layer.mystic-art-wizard {
-  background: radial-gradient(circle at 50% 40%, rgba(180, 130, 40, 0.35) 0%, rgba(30, 20, 5, 0.8) 100%);
-  opacity: 0.65;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 213, 106, 0.55) 0%, rgba(255, 180, 60, 0.2) 40%, transparent 65%),
+    linear-gradient(180deg, rgba(50, 35, 8, 0.85) 0%, rgba(120, 85, 20, 0.45) 100%);
+  opacity: 0.75;
 }
 
 /* SVG illustrations */
@@ -661,24 +671,157 @@
   pointer-events: none;
 }
 
-.card-unit.grimoire-card.card-val-1 {
-  background: linear-gradient(155deg, #120818 0%, #281038 50%, #180820 100%) !important;
-  filter: brightness(0.9);
+/* ─── Wild 1 & 15 — suit-colored, highly visible ─── */
+.card-unit.grimoire-card.wild-one,
+.mini-card.grimoire-card.wild-one {
+  filter: brightness(1.12) saturate(1.15);
+  z-index: 2;
+  animation: wild-one-shimmer 2.2s ease-in-out infinite alternate;
 }
 
-.card-unit.grimoire-card.card-val-1 .card-filigree-frame {
-  border-color: rgba(180, 100, 160, 0.5);
+.card-unit.grimoire-card.wild-one::after,
+.mini-card.grimoire-card.wild-one::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% 40%, rgba(255, 255, 255, 0.12) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 1;
 }
 
-.card-unit.grimoire-card.card-val-15 {
+.card-unit.grimoire-card.wild-one .card-filigree-frame,
+.mini-card.grimoire-card.wild-one .card-filigree-frame {
+  border-width: 3px !important;
   box-shadow:
-    0 0 20px rgba(201, 168, 76, 0.35),
-    0 4px 18px rgba(0, 0, 0, 0.55) !important;
-  animation: wizard-card-glow 2.4s ease-in-out infinite alternate;
+    inset 0 0 20px rgba(255, 255, 255, 0.1),
+    0 0 16px rgba(255, 255, 255, 0.15) !important;
 }
 
-.card-unit.grimoire-card.card-val-15 .card-filigree-frame {
-  border-color: rgba(201, 168, 76, 0.7);
+.card-unit.grimoire-card.wild-one.suit-blue .card-filigree-frame {
+  border-color: rgba(100, 180, 255, 0.75) !important;
+  box-shadow: inset 0 0 20px rgba(79, 160, 220, 0.2), 0 0 22px rgba(79, 160, 220, 0.45) !important;
+}
+
+.card-unit.grimoire-card.wild-one.suit-green .card-filigree-frame {
+  border-color: rgba(100, 220, 130, 0.75) !important;
+  box-shadow: inset 0 0 20px rgba(60, 180, 90, 0.2), 0 0 22px rgba(60, 180, 90, 0.45) !important;
+}
+
+.card-unit.grimoire-card.wild-one.suit-red .card-filigree-frame {
+  border-color: rgba(255, 120, 90, 0.75) !important;
+  box-shadow: inset 0 0 20px rgba(220, 80, 60, 0.2), 0 0 22px rgba(220, 80, 60, 0.45) !important;
+}
+
+.card-unit.grimoire-card.wild-one.suit-yellow .card-filigree-frame {
+  border-color: rgba(255, 220, 100, 0.8) !important;
+  box-shadow: inset 0 0 20px rgba(255, 200, 80, 0.2), 0 0 22px rgba(255, 200, 80, 0.45) !important;
+}
+
+.card-unit.grimoire-card.wild-one.suit-purple .card-filigree-frame,
+.card-unit.grimoire-card.wild-one.suit-indigo .card-filigree-frame {
+  border-color: rgba(200, 120, 255, 0.75) !important;
+  box-shadow: inset 0 0 20px rgba(160, 80, 220, 0.2), 0 0 22px rgba(160, 80, 220, 0.45) !important;
+}
+
+.card-center-wild-one,
+.card-center-wild-wizard {
+  font-size: 3.4rem !important;
+  z-index: 4;
+}
+
+.card-center-wild-one {
+  filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.45)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+}
+
+.card-center-wild-wizard {
+  filter: drop-shadow(0 0 18px rgba(255, 213, 106, 0.75)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.35));
+}
+
+@keyframes wild-one-shimmer {
+  0% { box-shadow: 0 0 14px rgba(255, 255, 255, 0.12), 0 4px 18px rgba(0, 0, 0, 0.55); }
+  100% { box-shadow: 0 0 26px rgba(255, 255, 255, 0.28), 0 4px 22px rgba(0, 0, 0, 0.5); }
+}
+
+.card-unit.grimoire-card.wild-wizard,
+.mini-card.grimoire-card.wild-wizard {
+  filter: brightness(1.15) saturate(1.2);
+  animation: wizard-golden-glow 2s ease-in-out infinite alternate;
+  z-index: 2;
+}
+
+.card-unit.grimoire-card.wild-wizard::before,
+.mini-card.grimoire-card.wild-wizard::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 42%, rgba(255, 213, 106, 0.4) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+  animation: wizard-aura-pulse 2s ease-in-out infinite alternate;
+}
+
+.card-unit.grimoire-card.wild-wizard .card-filigree-frame,
+.mini-card.grimoire-card.wild-wizard .card-filigree-frame {
+  border-color: rgba(255, 213, 106, 0.9) !important;
+  border-width: 3px !important;
+  box-shadow:
+    inset 0 0 32px rgba(255, 213, 106, 0.25),
+    0 0 24px rgba(255, 200, 80, 0.55),
+    0 0 48px rgba(201, 168, 76, 0.3) !important;
+}
+
+.card-unit.grimoire-card.wild-wizard .corner-ornament,
+.mini-card.grimoire-card.wild-wizard .corner-ornament {
+  border-color: rgba(255, 240, 180, 0.95);
+}
+
+.card-unit.grimoire-card.wild-wizard .card-corner .card-num,
+.mini-card.grimoire-card.wild-wizard .card-corner .card-num {
+  color: #fff8dc !important;
+  text-shadow:
+    0 0 16px rgba(255, 213, 106, 0.9),
+    0 0 32px rgba(255, 180, 60, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.9) !important;
+}
+
+.card-unit.grimoire-card.wild-wizard .card-label-wizard {
+  color: var(--grimoire-gold);
+  text-shadow: 0 0 14px rgba(255, 213, 106, 0.75);
+  letter-spacing: 0.16em;
+}
+
+.card-unit.grimoire-card.wild-one .card-label-jester {
+  color: rgba(255, 248, 235, 0.95);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+}
+
+.played-card-slot .card-center-wild-one,
+.played-card-slot .card-center-wild-wizard {
+  font-size: 2.2rem !important;
+}
+
+@keyframes wizard-golden-glow {
+  0% {
+    box-shadow:
+      0 0 22px rgba(255, 213, 106, 0.45),
+      0 0 44px rgba(201, 168, 76, 0.28),
+      inset 0 0 32px rgba(255, 200, 80, 0.12),
+      0 4px 18px rgba(0, 0, 0, 0.55);
+  }
+  100% {
+    box-shadow:
+      0 0 36px rgba(255, 213, 106, 0.75),
+      0 0 72px rgba(255, 180, 60, 0.4),
+      inset 0 0 48px rgba(255, 200, 80, 0.22),
+      0 4px 18px rgba(0, 0, 0, 0.55);
+  }
+}
+
+@keyframes wizard-aura-pulse {
+  0% { opacity: 0.55; transform: scale(0.98); }
+  100% { opacity: 0.9; transform: scale(1.02); }
 }
 
 .card-unit.grimoire-card.is-trump-color {

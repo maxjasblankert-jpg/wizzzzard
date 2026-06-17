@@ -78,21 +78,25 @@ try {
   assert.strictEqual(calculateScoreChange(3, 1), -20, 'Bid 3, won 1 => -20');
   console.log('✅ Test Case 7 Passed: Scoring computations match rules.');
 
-  // Test Case 8: Hand sorting
+  // Test Case 8: Hand sorting — 1s left, 2–14 middle, 15s right
   const hand = [
-    { suit: 'blue', value: 5 },
+    { suit: 'blue', value: 15 },
     { suit: 'green', value: 12 },
-    { suit: 'blue', value: 14 },
-    { suit: 'green', value: 3 }
+    { suit: 'blue', value: 1 },
+    { suit: 'green', value: 3 },
+    { suit: 'red', value: 15 },
+    { suit: 'yellow', value: 1 }
   ];
   const sorted = sortHand(hand);
-  assert.strictEqual(sorted[0].suit, 'blue', 'Blue comes before Green alphabetically');
-  assert.strictEqual(sorted[0].value, 5, 'Blue cards sorted ascending (low on left)');
-  assert.strictEqual(sorted[1].value, 14, 'Blue cards sorted ascending (high on right)');
-  assert.strictEqual(sorted[2].suit, 'green', 'Green comes second');
-  assert.strictEqual(sorted[2].value, 3, 'Green cards sorted ascending');
-  assert.strictEqual(sorted[3].value, 12, 'Green cards sorted ascending');
-  console.log('✅ Test Case 8 Passed: Hand sorting works correctly (suit then ascending value).');
+  assert.strictEqual(sorted[0].value, 1, 'All 1s on the left');
+  assert.strictEqual(sorted[1].value, 1, 'All 1s on the left');
+  assert.strictEqual(sorted[0].suit, 'blue', '1s sorted by suit order');
+  assert.strictEqual(sorted[1].suit, 'yellow', '1s sorted by suit order');
+  assert.strictEqual(sorted[2].value, 3, 'Standard cards in the middle');
+  assert.strictEqual(sorted[3].value, 12, 'Standard cards ascending within suit');
+  assert.strictEqual(sorted[4].value, 15, 'All 15s on the right');
+  assert.strictEqual(sorted[5].value, 15, 'All 15s on the right');
+  console.log('✅ Test Case 8 Passed: Hand sorting (1s left, 15s right, suit order).');
 
   // Test Case 9: Follow suit — 1/15 lead has no champ; wild ranks never force suit
   const trickLedBlue = [{ card: { suit: 'blue', value: 5 } }];
@@ -144,6 +148,22 @@ try {
   assert.strictEqual(Engine.getTrickLedSuit(skipWildsTrick), 'yellow', 'Skip lead 15 and second 1 — third player sets champ');
   assert.strictEqual(Engine.resolveTrick(skipWildsTrick, null).playerId, 'p1', 'Last 15 still wins the trick');
   console.log('✅ Test Case 10 Passed: Champ skips 1/15 leads to next standard card.');
+
+  require('./public/standard-rules.js');
+  const SR = global.StandardRules;
+
+  assert.strictEqual(Engine.getRoundsCount('standard', 3), 20, 'Standard 3p => 20 rounds');
+  assert.strictEqual(Engine.getRoundsCount('standard', 4), 15, 'Standard 4p => 15 rounds');
+  assert.strictEqual(SR.createStandardDeck().length, 60, 'Standard deck has 60 cards');
+
+  const wizard = SR.cardObjectFromId(52);
+  const blueFive = SR.cardObjectFromId(4);
+  const trickStd = [
+    { playerId: 'p1', playerName: 'A', card: blueFive },
+    { playerId: 'p2', playerName: 'B', card: wizard }
+  ];
+  assert.strictEqual(SR.evaluateTrickWinner(trickStd, 0).playerId, 'p2', 'Wizard wins trick');
+  console.log('✅ Test Case 11 Passed: Standard rules (deck, rounds, trick winner).');
 
   console.log('\n🌟 ALL UNIT TESTS PASSED SUCCESSFULLY! 🌟');
 } catch (e) {

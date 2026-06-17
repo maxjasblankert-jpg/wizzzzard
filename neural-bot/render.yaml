@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: wizzzzard-bots
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8001

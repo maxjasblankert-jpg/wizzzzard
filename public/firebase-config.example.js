@@ -1,4 +1,6 @@
-// Copy to firebase-config.js for local dev, or set env vars for Vercel build
+// Copy to firebase-config.js for local dev, or:
+//   1. Copy .env.example → .env and add your keys
+//   2. Run: npm run sync:firebase
 window.firebaseConfig = {
   apiKey: 'YOUR_API_KEY',
   authDomain: 'wizard-f356d.firebaseapp.com',

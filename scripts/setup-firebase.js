@@ -5,6 +5,8 @@
  * Creates project, Firestore, web app config, writes public/firebase-config.js,
  * and deploys Firestore rules.
  */
+require('./load-env');
+
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');

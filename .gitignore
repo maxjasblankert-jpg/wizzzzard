@@ -1,9 +1,15 @@
 node_modules/
 dist/
 .vercel/
+backups/
 .env
-.env.*
+.env.local
+.env.*.local
+!.env.example
 *.log
+wizard-neural-bot-bundle.zip
+neural-bot/__pycache__/
 
 .vercel
 public/firebase-config.js
+public/bot-env.js

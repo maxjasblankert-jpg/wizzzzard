@@ -25,6 +25,9 @@
   }
 
   function createDeck(mode) {
+    if (isStandardMode(mode)) {
+      return getStandardRules().createStandardDeck();
+    }
     const suitsToUse = ['green', 'blue', 'red', 'yellow'];
     if (mode === 'purple') suitsToUse.push('purple');
 
@@ -58,8 +61,13 @@
    * First standard card (2–14) sets the trick champ suit.
    * If the lead is 1 or 15, skip wild cards until someone plays 2–14.
    */
-  function getTrickLedSuit(cardsPlayed) {
+  function getTrickLedSuit(cardsPlayed, options = {}) {
     if (!cardsPlayed || cardsPlayed.length === 0) return null;
+    if (options.mode === 'standard') {
+      const SR = getStandardRules();
+      const idx = SR.getTrickLeadSuit(cardsPlayed, options.trumpSuitIndex ?? -1);
+      return idx >= 0 ? SR.suitNameFromIndex(idx) : null;
+    }
     for (const played of cardsPlayed) {
       const { value, suit } = played.card;
       if (value >= 2 && value <= 14) return suit;
@@ -116,14 +124,44 @@
     return evaluated[0].player;
   }
 
+  function isStandardMode(mode) {
+    return mode === 'standard';
+  }
+
+  function getStandardRules() {
+    return global.StandardRules;
+  }
+
   function getRoundsCount(mode, playerCount) {
+    if (isStandardMode(mode)) {
+      return getStandardRules().getRoundsCount(playerCount);
+    }
     const cardsCount = mode === 'purple' ? 75 : 60;
     return Math.floor(cardsCount / playerCount);
   }
 
+  const SUIT_ORDER = ['green', 'blue', 'red', 'yellow', 'purple'];
+
   function sortHand(hand) {
+    const suitRank = (suit) => {
+      const idx = SUIT_ORDER.indexOf(suit === 'indigo' ? 'purple' : suit);
+      return idx === -1 ? 99 : idx;
+    };
+    const handGroup = (value) => {
+      if (value === 1) return 0;
+      if (value === 15) return 2;
+      return 1;
+    };
+
     return [...hand].sort((a, b) => {
-      if (a.suit !== b.suit) return a.suit.localeCompare(b.suit);
+      const ga = handGroup(a.value);
+      const gb = handGroup(b.value);
+      if (ga !== gb) return ga - gb;
+
+      const sa = suitRank(a.suit);
+      const sb = suitRank(b.suit);
+      if (sa !== sb) return sa - sb;
+
       return a.value - b.value;
     });
   }
@@ -141,8 +179,11 @@
     return value === 1 || value === 15;
   }
 
-  function canPlayCard(hand, cardToPlay, currentTrick) {
+  function canPlayCard(hand, cardToPlay, currentTrick, room) {
     if (!currentTrick || currentTrick.length === 0) return true;
+    if (room && isStandardMode(room.mode)) {
+      return getStandardRules().canPlayCard(hand, cardToPlay, currentTrick, room.trumpSuitIndex ?? -1);
+    }
     const ledSuit = getTrickLedSuit(currentTrick);
     if (!ledSuit) return true;
     if (!hasFollowSuitCard(hand, ledSuit)) return true;
@@ -174,6 +215,7 @@
         handSize: hand.length,
         roundScores: meta.roundScores || [],
         isBot: !!meta.isBot,
+        botType: meta.botType || (meta.isBot ? 'heuristic' : null),
         hand,
         order: index
       };
@@ -212,7 +254,56 @@
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
+  function startStandardRound(room, handsById) {
+    const SR = getStandardRules();
+    room.players.forEach(p => {
+      p.tricksWon = 0;
+      p.currentBid = null;
+      handsById[p.id] = [];
+    });
+
+    room.currentTrick = [];
+    room.trickTransitionUntil = null;
+    room.jobCard = null;
+
+    let deck = shuffle(SR.createStandardDeck());
+    const numCards = room.currentRound;
+
+    for (let i = 0; i < numCards; i++) {
+      room.players.forEach(p => {
+        handsById[p.id].push(deck.pop());
+      });
+    }
+
+    let trumpCardId = -1;
+    if (deck.length > 0) {
+      trumpCardId = deck.pop().id;
+    }
+
+    const dealer = room.players[room.dealerIndex];
+    const trumpInfo = SR.resolveTrumpFromFlip(trumpCardId, handsById[dealer.id]);
+    room.trumpCard = trumpInfo.trumpCard;
+    room.trumpSuitIndex = trumpInfo.trumpSuitIndex;
+    room.trumpSuit = trumpInfo.trumpSuit;
+
+    room.players.forEach(p => {
+      handsById[p.id] = SR.sortStandardHand(handsById[p.id]);
+    });
+
+    room.status = 'bidding';
+    room.activePlayerIndex = (room.dealerIndex + 1) % room.playerCount;
+
+    const firstBidder = room.players[room.activePlayerIndex];
+    announce(room, SR.formatTrumpAnnouncement(room.trumpCard, room.trumpSuit, room.trumpSuitIndex));
+    announce(room, `Round ${room.currentRound} started. Dealer is ${dealer.name}. ${firstBidder.name}, you bid first.`);
+  }
+
   function startRound(room, handsById) {
+    if (isStandardMode(room.mode)) {
+      startStandardRound(room, handsById);
+      return;
+    }
+
     room.players.forEach(p => {
       p.tricksWon = 0;
       p.currentBid = null;
@@ -302,24 +393,40 @@
   }
 
   function resolveCompletedTrick(room, handsById) {
-    const winner = resolveTrick(room.currentTrick, room.trumpSuit);
+    let winner;
+    if (isStandardMode(room.mode)) {
+      winner = getStandardRules().evaluateTrickWinner(room.currentTrick, room.trumpSuitIndex ?? -1);
+    } else {
+      winner = resolveTrick(room.currentTrick, room.trumpSuit);
+    }
     const winningPlayer = room.players.find(p => p.id === winner.playerId);
     winningPlayer.tricksWon += 1;
 
-    const allOnes = room.currentTrick.every(p => p.card.value === 1);
-    if (allOnes) {
-      const trumpOne = room.trumpSuit
-        ? room.currentTrick.find(p => p.card.suit === room.trumpSuit && p.card.value === 1)
-        : null;
-      if (trumpOne) {
-        announce(room, `All 1s — but ${trumpOne.playerName}'s trump 1 takes it!`);
+    if (isStandardMode(room.mode)) {
+      const SR = getStandardRules();
+      if (SR.isWizard(winner.card.id)) {
+        announce(room, `${winner.playerName} wins the trick with a Wizard! ⭐`);
+      } else if (SR.isJester(winner.card.id)) {
+        announce(room, `${winner.playerName} wins — all Jesters played.`);
       } else {
-        announce(room, `All 1s! First played wins — ${winner.playerName} takes it.`);
+        announce(room, `${winner.playerName} wins the trick with ${winner.card.value} of ${SUITS[winner.card.suit].name}.`);
       }
-    } else if (winner.card.value === 15) {
-      announce(room, `15 played by ${winner.playerName} — trick won! ⭐`);
     } else {
-      announce(room, `${winner.playerName} wins the trick with ${winner.card.value} of ${SUITS[winner.card.suit].name}.`);
+      const allOnes = room.currentTrick.every(p => p.card.value === 1);
+      if (allOnes) {
+        const trumpOne = room.trumpSuit
+          ? room.currentTrick.find(p => p.card.suit === room.trumpSuit && p.card.value === 1)
+          : null;
+        if (trumpOne) {
+          announce(room, `All 1s — but ${trumpOne.playerName}'s trump 1 takes it!`);
+        } else {
+          announce(room, `All 1s! First played wins — ${winner.playerName} takes it.`);
+        }
+      } else if (winner.card.value === 15) {
+        announce(room, `15 played by ${winner.playerName} — trick won! ⭐`);
+      } else {
+        announce(room, `${winner.playerName} wins the trick with ${winner.card.value} of ${SUITS[winner.card.suit].name}.`);
+      }
     }
 
     room.trickWinnerHistory.push({
@@ -406,12 +513,18 @@
     const cardToPlay = hand[cardIndex];
 
     if (room.currentTrick.length > 0) {
-      if (!canPlayCard(hand, cardToPlay, room.currentTrick)) {
-        const ledSuit = getTrickLedSuit(room.currentTrick);
-        return {
-          ok: false,
-          message: `You must follow suit! Led suit is ${SUITS[ledSuit].name} ${SUITS[ledSuit].emoji}.`
-        };
+      if (!canPlayCard(hand, cardToPlay, room.currentTrick, room)) {
+        const ledSuit = getTrickLedSuit(room.currentTrick, {
+          mode: room.mode,
+          trumpSuitIndex: room.trumpSuitIndex
+        });
+        if (ledSuit && SUITS[ledSuit]) {
+          return {
+            ok: false,
+            message: `You must follow suit! Led suit is ${SUITS[ledSuit].name} ${SUITS[ledSuit].emoji}.`
+          };
+        }
+        return { ok: false, message: 'You must follow suit!' };
       }
     }
 
@@ -497,10 +610,12 @@
     generateRoomCode,
     createDeck,
     shuffle,
+    isStandardMode,
     getTrickLedSuit,
     resolveTrick,
     getRoundsCount,
     sortHand,
+    startStandardRound,
     calculateScoreChange,
     announce,
     hasFollowSuitCard,

@@ -212,7 +212,7 @@
   }
 
   function roomDocFromRuntime(room) {
-    return {
+    const doc = {
       roomCode: room.roomCode,
       mode: room.mode,
       playerCount: room.maxPlayers,
@@ -224,6 +224,8 @@
       maxRounds: room.maxRounds,
       jobCard: room.jobCard,
       trumpSuit: room.trumpSuit,
+      trumpCard: room.trumpCard || null,
+      trumpSuitIndex: room.trumpSuitIndex != null ? room.trumpSuitIndex : null,
       jobCardHistory: room.jobCardHistory || [],
       activePlayerIndex: room.activePlayerIndex,
       currentTrick: room.currentTrick || [],
@@ -235,6 +237,7 @@
       playerIds: room.playerIds,
       version: room.version || 0
     };
+    return global.StandardRules ? global.StandardRules.stripUndefined(doc) : doc;
   }
 
   async function persistRoomState(code, room, handsById, options = {}) {
@@ -263,6 +266,7 @@
         score: p.score,
         roundScores: p.roundScores || [],
         isBot: !!p.isBot,
+        botType: p.botType || (p.isBot ? 'heuristic' : null),
         order: room.playerIds.indexOf(p.id),
         handSize
       }, { merge: true });
@@ -297,7 +301,8 @@
       score: p.score,
       handSize: p.handSize != null ? p.handSize : (p.hand || []).length,
       roundScores: p.roundScores || [],
-      isBot: !!p.isBot
+      isBot: !!p.isBot,
+      botType: docById[p.id]?.botType || p.botType || null
     }));
 
     return {
@@ -313,6 +318,8 @@
       maxRounds: room.maxRounds,
       jobCard: room.jobCard,
       trumpSuit: room.trumpSuit,
+      trumpCard: room.trumpCard || null,
+      trumpSuitIndex: room.trumpSuitIndex != null ? room.trumpSuitIndex : null,
       activePlayerIndex: room.activePlayerIndex,
       currentTrick: room.currentTrick || [],
       players: sanitizedPlayers,
@@ -431,21 +438,25 @@
       Engine().resolveGameWinners(room);
     } else {
       room.dealerIndex = (room.dealerIndex + 1) % room.playerCount;
-      room.jobCardHistory = room.jobCardHistory || [];
-      if (room.jobCard?.key && !room.jobCardHistory.includes(room.jobCard.key)) {
-        room.jobCardHistory.push(room.jobCard.key);
-      }
+      if (Engine().isStandardMode(room.mode)) {
+        Engine().startRound(room, handsById);
+      } else {
+        room.jobCardHistory = room.jobCardHistory || [];
+        if (room.jobCard?.key && !room.jobCardHistory.includes(room.jobCard.key)) {
+          room.jobCardHistory.push(room.jobCard.key);
+        }
 
-      const fullDeck = Engine().createDeck(room.mode);
-      const newJobCard = Engine().pickJobCard(fullDeck, room.jobCardHistory);
-      room.jobCard = newJobCard;
-      room.trumpSuit = Engine().resolveTrumpSuit(newJobCard);
-      if (!room.jobCardHistory.includes(newJobCard.key)) {
-        room.jobCardHistory.push(newJobCard.key);
-      }
+        const fullDeck = Engine().createDeck(room.mode);
+        const newJobCard = Engine().pickJobCard(fullDeck, room.jobCardHistory);
+        room.jobCard = newJobCard;
+        room.trumpSuit = Engine().resolveTrumpSuit(newJobCard);
+        if (!room.jobCardHistory.includes(newJobCard.key)) {
+          room.jobCardHistory.push(newJobCard.key);
+        }
 
-      Engine().announce(room, `Round ${room.currentRound} — ${Engine().formatTrumpAnnouncement(newJobCard)}`);
-      Engine().startRound(room, handsById);
+        Engine().announce(room, `Round ${room.currentRound} — ${Engine().formatTrumpAnnouncement(newJobCard)}`);
+        Engine().startRound(room, handsById);
+      }
     }
 
     room.pendingAction = null;
@@ -523,14 +534,34 @@
       if (freshRoom.trickTransitionUntil) return;
 
       if (freshRoom.status === 'bidding') {
-        const bidVal = Engine().playBotBid(freshRoom);
+        let bidVal;
+        if (global.BotClient && global.BotClient.isNeuralBot(activeNow)) {
+          try {
+            bidVal = await global.BotClient.playNeuralBotBid(freshRoom, freshHands, activeNow.id);
+          } catch (err) {
+            console.warn('Neural bid failed, using heuristic:', err);
+            bidVal = Engine().playBotBid(freshRoom);
+          }
+        } else {
+          bidVal = Engine().playBotBid(freshRoom);
+        }
         const result = Engine().placeBid(freshRoom, activeNow.id, bidVal);
         if (!result.ok) return;
         freshRoom.version = (freshRoom.version || 0) + 1;
         applyLocalRuntime(freshRoom);
         await persistBidFast(currentRoomCode, freshRoom, activeNow.id);
       } else if (freshRoom.status === 'play') {
-        const cardKey = Engine().playBotCard(freshRoom, freshHands, activeNow);
+        let cardKey;
+        if (global.BotClient && global.BotClient.isNeuralBot(activeNow)) {
+          try {
+            cardKey = await global.BotClient.playNeuralBotCard(freshRoom, freshHands, activeNow.id);
+          } catch (err) {
+            console.warn('Neural play failed, using heuristic:', err);
+            cardKey = Engine().playBotCard(freshRoom, freshHands, activeNow);
+          }
+        } else {
+          cardKey = Engine().playBotCard(freshRoom, freshHands, activeNow);
+        }
         if (!cardKey) return;
         const result = Engine().playCard(freshRoom, freshHands, activeNow.id, cardKey);
         if (!result.ok) return;
@@ -584,7 +615,7 @@
     });
 
     unsubHand = handDocRef(code, seatPlayerId || uid).onSnapshot({ includeMetadataChanges: false }, (snap) => {
-      privateHand = snap.exists ? (snap.data().cards || []) : [];
+      privateHand = Engine().sortHand(snap.exists ? (snap.data().cards || []) : []);
       schedulePublishSync();
     });
   }
@@ -669,7 +700,7 @@
             await this.joinRoom(roomCode, playerId, playerName, data.avatar);
             break;
           case 'add_bot':
-            await this.addBot();
+            await this.addBot(data);
             break;
           case 'start_game':
             await this.startGame();
@@ -704,6 +735,7 @@
     async createRoom(data) {
       const { mode, playerCount, hookRule, hostName, avatar } = data;
       const maxPlayers = parseInt(playerCount, 10);
+      const effectiveHook = mode === 'standard' ? false : !!hookRule;
       const code = await uniqueRoomCode();
       const maxRounds = Engine().getRoundsCount(mode, maxPlayers);
 
@@ -715,7 +747,7 @@
         roomCode: code,
         mode,
         playerCount: maxPlayers,
-        hookRule: !!hookRule,
+        hookRule: effectiveHook,
         hostId: uid,
         status: 'lobby',
         dealerIndex: 0,
@@ -723,6 +755,8 @@
         maxRounds,
         jobCard: null,
         trumpSuit: null,
+        trumpCard: null,
+        trumpSuitIndex: null,
         jobCardHistory: [],
         activePlayerIndex: 0,
         currentTrick: [],
@@ -828,7 +862,8 @@
       emit({ type: 'joined', roomCode: code, playerId: uid, playerName: myPlayerName });
     },
 
-    async addBot() {
+    async addBot(data = {}) {
+      const botType = data.botType || 'neural_v7';
       const code = currentRoomCode;
       const roomDoc = (await roomDocRef(code).get()).data();
       if (!roomDoc || roomDoc.status !== 'lobby') return;
@@ -839,6 +874,18 @@
       if (roomDoc.playerIds.length >= roomDoc.playerCount) {
         fail('Lobby is already full.');
         return;
+      }
+
+      if (botType !== 'heuristic' && global.BotClient) {
+        const check = global.BotClient.neuralSetupValid({
+          mode: roomDoc.mode,
+          hookRule: roomDoc.hookRule,
+          playerCount: roomDoc.playerCount
+        }, botType);
+        if (!check.ok) {
+          fail(check.message);
+          return;
+        }
       }
 
       const playerDocs = await loadPlayerDocs(code);
@@ -857,7 +904,8 @@
       const order = roomDoc.playerIds.length;
       const updatedIds = [...roomDoc.playerIds, botId];
       const log = roomDoc.hostVoiceLog || [];
-      log.push({ timestamp: Date.now(), text: `${botName} (AI) joined the lobby.` });
+      const label = botType === 'heuristic' ? 'Practice' : (botType === 'neural_v6' ? 'Champion v6' : 'Champion v7');
+      log.push({ timestamp: Date.now(), text: `${botName} (${label} AI) joined the lobby.` });
       if (updatedIds.length === roomDoc.playerCount) {
         log.push({ timestamp: Date.now(), text: 'Lobby is full! Host can now start the game.' });
       }
@@ -872,6 +920,7 @@
         score: 0,
         roundScores: [],
         isBot: true,
+        botType,
         order
       });
       await handDocRef(code, botId).set({ cards: [] });
@@ -894,16 +943,27 @@
       const handsById = await loadAllHands(code, roomDoc.playerIds);
       const room = buildRuntimeRoom(roomDoc, playerDocs, handsById);
 
-      const fullDeck = Engine().createDeck(room.mode);
-      const jobCard = Engine().pickJobCard(fullDeck, []);
-      room.jobCard = jobCard;
-      room.trumpSuit = Engine().resolveTrumpSuit(jobCard);
-      room.jobCardHistory = [jobCard.key];
       room.status = 'deal';
       room.currentRound = 1;
       room.dealerIndex = 0;
-      Engine().announce(room, Engine().formatTrumpAnnouncement(jobCard));
-      Engine().startRound(room, handsById);
+
+      if (Engine().isStandardMode(room.mode)) {
+        room.jobCard = null;
+        room.trumpSuit = null;
+        room.trumpCard = null;
+        room.trumpSuitIndex = null;
+        room.jobCardHistory = [];
+        Engine().announce(room, 'Standard official rules — Champion bots ready.');
+        Engine().startRound(room, handsById);
+      } else {
+        const fullDeck = Engine().createDeck(room.mode);
+        const jobCard = Engine().pickJobCard(fullDeck, []);
+        room.jobCard = jobCard;
+        room.trumpSuit = Engine().resolveTrumpSuit(jobCard);
+        room.jobCardHistory = [jobCard.key];
+        Engine().announce(room, Engine().formatTrumpAnnouncement(jobCard));
+        Engine().startRound(room, handsById);
+      }
       room.version = (room.version || 0) + 1;
 
       await persistRoomState(code, room, handsById);

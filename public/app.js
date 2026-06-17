@@ -304,10 +304,41 @@ function switchLobbyTab(tab) {
 function updateModeWarning() {
   const selectMode = document.getElementById('select-game-mode').value;
   const warning = document.getElementById('purple-mode-warning');
+  const neuralHint = document.getElementById('neural-setup-hint');
+  const hookCheck = document.getElementById('check-hook-rule');
+  const botTypeSelect = document.getElementById('select-bot-type');
+
   if (selectMode === 'purple') {
     warning.classList.remove('hidden');
   } else {
     warning.classList.add('hidden');
+  }
+
+  const isStandard = selectMode === 'standard';
+  if (neuralHint) {
+    neuralHint.classList.toggle('hidden', !isStandard);
+  }
+
+  if (hookCheck) {
+    if (isStandard) {
+      hookCheck.checked = false;
+      hookCheck.disabled = true;
+    } else {
+      hookCheck.disabled = false;
+    }
+  }
+
+  if (botTypeSelect) {
+    [...botTypeSelect.options].forEach(opt => {
+      if (opt.value === 'neural_v6') {
+        opt.disabled = !isStandard;
+      } else if (opt.value === 'neural_v7') {
+        opt.disabled = !isStandard;
+      }
+    });
+    if (!isStandard && botTypeSelect.value.startsWith('neural')) {
+      botTypeSelect.value = 'heuristic';
+    }
   }
 }
 
@@ -351,7 +382,7 @@ function createRoom() {
   const avatar = document.getElementById('input-create-emoji')?.value || '🧙';
   const playerCount = document.getElementById('select-player-count').value;
   const mode = document.getElementById('select-game-mode').value;
-  const hookRule = document.getElementById('check-hook-rule').checked;
+  const hookRule = mode === 'standard' ? false : document.getElementById('check-hook-rule').checked;
 
   sendSocketMsg('create_room', null, null, hostName, {
     hostName,
@@ -509,7 +540,19 @@ function startGame() {
 }
 
 function addBot() {
-  sendSocketMsg('add_bot', currentRoomCode, myPlayerId, myPlayerName, {});
+  const botType = document.getElementById('select-bot-type')?.value || 'neural_v7';
+  if (gameState && botType !== 'heuristic' && window.BotClient) {
+    const check = BotClient.neuralSetupValid({
+      mode: gameState.mode,
+      hookRule: gameState.hookRule,
+      playerCount: gameState.playerCount || gameState.maxPlayers
+    }, botType);
+    if (!check.ok) {
+      alert(check.message);
+      return;
+    }
+  }
+  sendSocketMsg('add_bot', currentRoomCode, myPlayerId, myPlayerName, { botType });
 }
 
 // Game Board Actions
@@ -1273,8 +1316,9 @@ const WizardAudio = {
 document.addEventListener('click', () => WizardAudio.primeAudio(), { once: true });
 
 function renderTrumpCards() {
-  const html = gameState.jobCard
-    ? buildMiniCardHTML(gameState.jobCard, jobCardHighlightClass(gameState.jobCard))
+  const trumpCard = gameState.trumpCard || gameState.jobCard;
+  const html = trumpCard
+    ? buildMiniCardHTML(trumpCard, jobCardHighlightClass(trumpCard))
     : '<div class="mini-card empty">?</div>';
 
   ['job-card-container', 'bid-trump-container'].forEach(id => {
@@ -1283,7 +1327,7 @@ function renderTrumpCards() {
   });
 
   const centerTrump = document.querySelector('.table-center-trump');
-  const jobKey = gameState.jobCard?.key || null;
+  const jobKey = trumpCard?.key || null;
   if (centerTrump && jobKey !== lastTrumpBadgeJobKey) {
     lastTrumpBadgeJobKey = jobKey;
     centerTrump.classList.remove('trump-badge-enter');
@@ -1299,7 +1343,10 @@ function renderPlayerHand() {
   const container = document.getElementById('player-hand-container');
   container.innerHTML = '';
 
-  const hand = gameState.privateHand || [];
+  const isStandard = GameEngine.isStandardMode(gameState.mode);
+  const hand = isStandard
+    ? StandardRules.sortStandardHand(gameState.privateHand || [])
+    : GameEngine.sortHand(gameState.privateHand || []);
   if (hand.length === 0) {
     container.innerHTML = '<div class="empty-hand-placeholder">Cards will be dealt here.</div>';
     lastHandDealKey = null;
@@ -1313,20 +1360,30 @@ function renderPlayerHand() {
   const activePlayer = gameState.players[gameState.activePlayerIndex];
   const isMyTurn = gameState.status === 'play' && activePlayer.id === myPlayerId && !gameState.paused;
 
-  const ledSuit = GameEngine.getTrickLedSuit(gameState.currentTrick || []);
+  const ledSuit = GameEngine.getTrickLedSuit(gameState.currentTrick || [], {
+    mode: gameState.mode,
+    trumpSuitIndex: gameState.trumpSuitIndex
+  });
 
-  // Follow suit: 1s and 15s are wild — only standard cards (2–14) count for following
-  const hasFollowSuit = ledSuit
-    ? hand.some(c => c.suit === ledSuit && c.value >= 2 && c.value <= 14)
-    : false;
+  const hasFollowSuit = isStandard
+    ? (ledSuit != null && hand.some(c => c.id != null && !StandardRules.isWizard(c.id) && !StandardRules.isJester(c.id)
+        && StandardRules.suitNameFromIndex(StandardRules.cardSuit(c.id)) === ledSuit))
+    : (ledSuit
+      ? hand.some(c => c.suit === ledSuit && c.value >= 2 && c.value <= 14)
+      : false);
 
   hand.forEach((card, idx) => {
     // Check if card is playable
     let isPlayable = isMyTurn;
-    if (isMyTurn && hasFollowSuit) {
-      const isWild = card.value === 1 || card.value === 15;
-      const followsSuit = card.suit === ledSuit && card.value >= 2 && card.value <= 14;
-      isPlayable = followsSuit || isWild;
+    if (isMyTurn && gameState.currentTrick.length > 0) {
+      if (isStandard) {
+        const legalIds = StandardRules.getLegalCardIds(hand, gameState.currentTrick, gameState.trumpSuitIndex ?? -1);
+        isPlayable = legalIds.includes(card.id);
+      } else if (hasFollowSuit) {
+        const isWild = card.value === 1 || card.value === 15;
+        const followsSuit = card.suit === ledSuit && card.value >= 2 && card.value <= 14;
+        isPlayable = followsSuit || isWild;
+      }
     }
 
     const isTrump = isChampColorCard(card);
@@ -1641,6 +1698,7 @@ function renderGameOver() {
 
 // Execute connection on load
 connectWebSocket();
+updateModeWarning();
 initEmojiPicker('create-emoji-picker', 'input-create-emoji', '🧙');
 initEmojiPicker('join-emoji-picker', 'input-join-emoji', '🧝');
 

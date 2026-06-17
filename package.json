@@ -7,6 +7,8 @@
     "start": "node server.js",
     "dev": "node server.js",
     "build:vercel": "node scripts/build-vercel.js",
+    "sync:firebase": "node scripts/sync-firebase-config.js",
+    "bot:service": "cd neural-bot && python -m uvicorn bot_service:app --port 8001",
     "test": "node test.js",
     "firebase:login": "npx firebase-tools login",
     "firebase:setup": "node scripts/setup-firebase.js",
@@ -17,6 +19,7 @@
     "firebase-tools": "^13.0.0"
   },
   "dependencies": {
+    "dotenv": "^16.6.1",
     "express": "^4.19.2",
     "ws": "^8.16.0"
   },
