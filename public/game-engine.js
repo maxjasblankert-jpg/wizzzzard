@@ -25,7 +25,7 @@
   }
 
   function createDeck(mode) {
-    if (isStandardMode(mode)) {
+    if (isStandardMode(mode) || mode === 'normal') {
       return getStandardRules().createStandardDeck();
     }
     const suitsToUse = ['green', 'blue', 'red', 'yellow'];
@@ -200,6 +200,13 @@
     if (room.hostVoiceLog.length > 50) room.hostVoiceLog.shift();
   }
 
+  function resolveBotType(meta, room) {
+    if (!meta?.isBot) return null;
+    if (meta.botType === 'heuristic') return 'heuristic';
+    if (meta.botType === 'neural_v6' || meta.botType === 'neural_v7') return meta.botType;
+    return isStandardMode(room?.mode) ? 'neural_v7' : 'heuristic';
+  }
+
   function buildPlayersArray(room, handsById) {
     return room.playerIds.map((id, index) => {
       const meta = room.playersById[id];
@@ -215,7 +222,7 @@
         handSize: hand.length,
         roundScores: meta.roundScores || [],
         isBot: !!meta.isBot,
-        botType: meta.botType || (meta.isBot ? 'heuristic' : null),
+        botType: resolveBotType(meta, room),
         hand,
         order: index
       };
@@ -264,6 +271,7 @@
 
     room.currentTrick = [];
     room.trickTransitionUntil = null;
+    room.trickWinnerHistory = [];
     room.jobCard = null;
 
     let deck = shuffle(SR.createStandardDeck());
@@ -312,6 +320,7 @@
 
     room.currentTrick = [];
     room.trickTransitionUntil = null;
+    room.trickWinnerHistory = [];
 
     const excludedKeys = new Set([
       ...(room.jobCardHistory || []),
@@ -430,6 +439,7 @@
     }
 
     room.trickWinnerHistory.push({
+      round: room.currentRound,
       trickIndex: room.trickWinnerHistory.length,
       winnerId: winner.playerId,
       winnerName: winner.playerName,
@@ -597,7 +607,11 @@
     room.playerIds = room.playerIds || [];
     room.playersById = {};
     playerDocs.forEach(doc => {
-      room.playersById[doc.id] = { ...doc };
+      const meta = { ...doc };
+      if (meta.isBot && !meta.botType) {
+        meta.botType = isStandardMode(room.mode) ? 'neural_v7' : 'heuristic';
+      }
+      room.playersById[doc.id] = meta;
     });
     room.players = buildPlayersArray(room, {});
     room.playerCount = room.playerIds.length;
@@ -636,6 +650,7 @@
     playCard,
     playBotCard,
     playBotBid,
-    hydrateRoom
+    hydrateRoom,
+    resolveBotType
   };
 })(typeof window !== 'undefined' ? window : global);

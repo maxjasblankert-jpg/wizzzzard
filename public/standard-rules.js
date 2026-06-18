@@ -1,34 +1,33 @@
-/* Official Wizard rules — matches neural-bot/wizard_simulator.py (card ids 0–59) */
+/* Standard Wizard rules — 4 suits × 15 cards (1 = Jester, 2–14, 15 = Wizard) */
 (function (global) {
   const DECK_SIZE = 60;
-  const CARDS_PER_SUIT = 13;
-  const NUM_COLORED = 52;
-  const WIZARD_LO = 52;
-  const WIZARD_HI = 56;
-  const JESTER_LO = 56;
+  const CARDS_PER_SUIT = 15;
+  const NUM_SUITS = 4;
 
-  /** Simulator suit index → UI suit name */
+  /** Suit index → UI suit name */
   const SUIT_FROM_INDEX = ['blue', 'red', 'green', 'yellow'];
   const SUIT_TO_INDEX = { blue: 0, red: 1, green: 2, yellow: 3 };
 
-  function isWizard(id) {
-    return id >= WIZARD_LO && id < WIZARD_HI;
-  }
-
-  function isJester(id) {
-    return id >= JESTER_LO;
-  }
-
   function cardSuit(id) {
-    return id < NUM_COLORED ? Math.floor(id / CARDS_PER_SUIT) : -1;
+    if (id < 0 || id >= DECK_SIZE) return -1;
+    return Math.floor(id / CARDS_PER_SUIT);
   }
 
   function cardValue(id) {
-    return id < NUM_COLORED ? (id % CARDS_PER_SUIT) + 1 : 0;
+    if (id < 0 || id >= DECK_SIZE) return 0;
+    return (id % CARDS_PER_SUIT) + 1;
+  }
+
+  function isWizard(id) {
+    return cardValue(id) === 15;
+  }
+
+  function isJester(id) {
+    return cardValue(id) === 1;
   }
 
   function suitNameFromIndex(idx) {
-    return idx >= 0 && idx < 4 ? SUIT_FROM_INDEX[idx] : null;
+    return idx >= 0 && idx < NUM_SUITS ? SUIT_FROM_INDEX[idx] : null;
   }
 
   function createStandardDeck() {
@@ -40,31 +39,18 @@
   }
 
   function cardObjectFromId(id) {
-    if (isWizard(id)) {
-      return {
-        id,
-        suit: 'yellow',
-        value: 15,
-        cardKind: 'wizard',
-        key: `std-${id}`,
-        icon: '⭐'
-      };
-    }
-    if (isJester(id)) {
-      return {
-        id,
-        suit: 'purple',
-        value: 1,
-        cardKind: 'jester',
-        key: `std-${id}`,
-        icon: '🃏'
-      };
-    }
     const suitIdx = cardSuit(id);
-    const suit = SUIT_FROM_INDEX[suitIdx];
+    const suit = SUIT_FROM_INDEX[suitIdx] || 'blue';
     const value = cardValue(id);
-    const icon = (global.CardArt && global.CardArt.getRankSymbol(suit, value)) || '◆';
-    return { id, suit, value, cardKind: 'colored', key: `std-${id}`, icon };
+    let cardKind = 'colored';
+    if (value === 1) cardKind = 'jester';
+    else if (value === 15) cardKind = 'wizard';
+    const icon = value === 1
+      ? '🃏'
+      : value === 15
+        ? '⭐'
+        : ((global.CardArt && global.CardArt.getRankSymbol(suit, value)) || '◆');
+    return { id, suit, value, cardKind, key: `std-${id}`, icon };
   }
 
   function getRoundsCount(playerCount) {
@@ -74,13 +60,14 @@
   function dealerChooseTrump(dealerHand) {
     const counts = [0, 0, 0, 0];
     dealerHand.forEach(c => {
-      if (c.cardKind === 'colored' || (c.id != null && c.id < NUM_COLORED)) {
-        const idx = cardSuit(c.id != null ? c.id : -1);
+      const v = c.value != null ? c.value : cardValue(c.id);
+      if (v >= 2 && v <= 14) {
+        const idx = c.id != null ? cardSuit(c.id) : SUIT_TO_INDEX[c.suit];
         if (idx >= 0) counts[idx]++;
       }
     });
     let best = 0;
-    for (let i = 1; i < 4; i++) {
+    for (let i = 1; i < NUM_SUITS; i++) {
       if (counts[i] > counts[best]) best = i;
     }
     return best;
@@ -114,8 +101,8 @@
     for (const entry of trick) {
       const id = entry.card.id != null ? entry.card.id : -1;
       if (id < 0) continue;
-      if (isWizard(id)) return -1;
-      if (isJester(id)) continue;
+      const v = cardValue(id);
+      if (v === 1 || v === 15) continue;
       return cardSuit(id);
     }
     return -1;
@@ -125,16 +112,26 @@
     if (!trick || trick.length === 0) return null;
     const trump = trumpSuitIndex != null ? trumpSuitIndex : -1;
 
+    let lastWizard = null;
     for (let i = 0; i < trick.length; i++) {
-      const id = trick[i].card.id;
-      if (isWizard(id)) return trick[i];
+      if (isWizard(trick[i].card.id)) lastWizard = trick[i];
+    }
+    if (lastWizard) return lastWizard;
+
+    const allOnes = trick.every(t => cardValue(t.card.id) === 1);
+    if (allOnes) {
+      if (trump >= 0) {
+        const trumpOne = trick.find(t => cardSuit(t.card.id) === trump);
+        if (trumpOne) return trumpOne;
+      }
+      return trick[0];
     }
 
     let lead = -1;
     for (let i = 0; i < trick.length; i++) {
-      const id = trick[i].card.id;
-      if (!isJester(id)) {
-        lead = cardSuit(id);
+      const v = cardValue(trick[i].card.id);
+      if (v >= 2 && v <= 14) {
+        lead = cardSuit(trick[i].card.id);
         break;
       }
     }
@@ -146,9 +143,9 @@
 
     for (let i = 0; i < trick.length; i++) {
       const id = trick[i].card.id;
-      if (isJester(id)) continue;
-      const s = cardSuit(id);
       const v = cardValue(id);
+      if (v === 1 || v === 15) continue;
+      const s = cardSuit(id);
       if (trump >= 0 && s === trump) {
         if (!bestIsTrump || v > bestValue) {
           bestIsTrump = true;
@@ -178,7 +175,10 @@
     const lead = getTrickLeadSuit(trick, trumpSuitIndex);
     if (lead < 0) return ids;
 
-    const followSuit = ids.filter(id => !isWizard(id) && !isJester(id) && cardSuit(id) === lead);
+    const followSuit = ids.filter(id => {
+      const v = cardValue(id);
+      return v >= 2 && v <= 14 && cardSuit(id) === lead;
+    });
     if (followSuit.length > 0) {
       const wizards = ids.filter(isWizard);
       const jesters = ids.filter(isJester);
@@ -194,8 +194,9 @@
 
   function sortStandardHand(hand) {
     const group = (c) => {
-      if (c.cardKind === 'jester' || isJester(c.id)) return 0;
-      if (c.cardKind === 'wizard' || isWizard(c.id)) return 2;
+      const v = c.value != null ? c.value : cardValue(c.id);
+      if (v === 1) return 0;
+      if (v === 15) return 2;
       return 1;
     };
     return [...hand].sort((a, b) => {
@@ -208,16 +209,21 @@
         if (sa !== sb) return sa - sb;
         return a.value - b.value;
       }
+      const sa = cardSuit(a.id);
+      const sb = cardSuit(b.id);
+      if (sa !== sb) return sa - sb;
       return a.id - b.id;
     });
   }
 
   function collectSeenCardIds(room, handsById) {
     const seen = new Set();
+    const round = room.currentRound;
     if (room.trumpCard && room.trumpCard.id != null && room.trumpCard.id >= 0) {
       seen.add(room.trumpCard.id);
     }
     (room.trickWinnerHistory || []).forEach(t => {
+      if (t.round !== round) return;
       (t.cardsPlayed || []).forEach(p => {
         if (p.card && p.card.id != null) seen.add(p.card.id);
       });
@@ -255,6 +261,7 @@
 
   global.StandardRules = {
     DECK_SIZE,
+    CARDS_PER_SUIT,
     SUIT_FROM_INDEX,
     SUIT_TO_INDEX,
     isWizard,

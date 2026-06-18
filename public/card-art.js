@@ -8,12 +8,12 @@
     purple: { label: 'Arcane',  name: 'Purple', element: 'arcane' }
   };
 
-  /** One iconic emoji per suit (used for 1s and 15s) */
+  /** One iconic emoji per suit — center of every card */
   const SUIT_PRIMARY_EMOJI = {
-    blue: '🌊',
+    blue: '💧',
     red: '🔥',
-    green: '🌲',
-    yellow: '☀️',
+    green: '🌿',
+    yellow: '✨',
     purple: '🔮'
   };
 
@@ -42,16 +42,20 @@
     return suit === 'indigo' ? 'purple' : suit;
   }
 
-  /** Wild 1/15 use suit primary emoji; 2–14 use themed pool */
-  function getRankSymbol(suit, value) {
+  function isJesterCard(card) {
+    return !!card && card.value === 1;
+  }
+
+  function isWizardCard(card) {
+    return !!card && card.value === 15;
+  }
+
+  /** Center emoji: one primary icon per suit (not the themed rank pool) */
+  function getRankSymbol(suit, value, card) {
     const s = normalizeSuit(suit);
-    if (value === 1 || value === 15) {
-      return SUIT_PRIMARY_EMOJI[s] || '◆';
-    }
-    const pool = SUIT_THEME_EMOJIS[s];
-    if (!pool || !pool.length) return '◆';
-    const idx = Math.max(0, value - 2) % pool.length;
-    return pool[idx];
+    if (card && isJesterCard(card)) return '🃏';
+    if (card && isWizardCard(card)) return '🧙';
+    return SUIT_PRIMARY_EMOJI[s] || '◆';
   }
 
   function getSuitEmoji(suit, value) {
@@ -66,15 +70,19 @@
     return SUIT_THEMES[normalizeSuit(suit)]?.name || suit;
   }
 
-  function getCardLabel(suit, value) {
+  function getCardLabel(suit, value, card) {
+    if (card && isJesterCard(card)) return 'Jester';
+    if (card && isWizardCard(card)) return 'Wizard';
     if (value === 1) return 'Jester';
     if (value === 15) return 'Wizard';
     return getSuitLabel(suit);
   }
 
-  function getMysticArtClass(suit, value) {
+  function getMysticArtClass(suit, value, card) {
     const s = normalizeSuit(suit);
     const base = SUIT_ART_CLASS[s] || 'mystic-art-standard';
+    if (card && isJesterCard(card)) return `mystic-art-jester ${base}`;
+    if (card && isWizardCard(card)) return `mystic-art-wizard ${base}`;
     if (value === 1) return `mystic-art-jester ${base}`;
     if (value === 15) return `mystic-art-wizard ${base}`;
     return base;
@@ -91,26 +99,51 @@
     return `<div class="card-illustration card-ill-${key.replace(/[^a-z0-9-]/g, '')}">${ILLUSTRATIONS[key]}</div>`;
   }
 
+  const SUIT_THEME_CLASS = {
+    red: 'suit-fire',
+    blue: 'suit-water',
+    green: 'suit-nature',
+    yellow: 'suit-light',
+    purple: 'suit-arcane'
+  };
+
+  function getSuitThemeClass(card) {
+    if (!card) return 'suit-water';
+    if (isJesterCard(card)) return 'suit-jester';
+    if (isWizardCard(card)) return 'suit-wizard';
+    return SUIT_THEME_CLASS[normalizeSuit(card.suit)] || 'suit-water';
+  }
+
+  function getCardDisplayValue(card) {
+    if (!card) return '';
+    if (isJesterCard(card)) return 'J';
+    if (isWizardCard(card)) return 'W';
+    return String(card.value);
+  }
+
   function getMysticCardClasses(card) {
-    let cls = 'mystic-card grimoire-card';
-    if (card.value === 1) cls += ' wild-one';
-    if (card.value === 15) cls += ' wild-wizard';
+    let cls = `mystic-card grimoire-card game-card ${getSuitThemeClass(card)}`;
+    if (isJesterCard(card)) cls += ' wild-one';
+    if (isWizardCard(card)) cls += ' wild-wizard';
     return cls;
   }
 
   function renderCardInnerHTML(card, options = {}) {
     const value = card.value;
     const suit = normalizeSuit(card.suit);
-    const symbol = card.icon || getRankSymbol(suit, value);
-    const label = getCardLabel(suit, value);
-    const showSpecialLabel = (value === 1 || value === 15) && options.showLabel !== false;
-    const labelClass = value === 1
+    const displayValue = getCardDisplayValue(card);
+    const symbol = card.icon || getRankSymbol(suit, value, card);
+    const label = getCardLabel(suit, value, card);
+    const jester = isJesterCard(card);
+    const wizard = isWizardCard(card);
+    const showSpecialLabel = (jester || wizard) && options.showLabel !== false;
+    const labelClass = jester
       ? 'card-label-bottom card-label-jester'
       : 'card-label-bottom card-label-wizard';
-    const artClass = getMysticArtClass(suit, value);
+    const artClass = getMysticArtClass(suit, value, card);
     const illustration = getCardIllustrationHTML(suit, value, options);
     const hideEmoji = !!illustration;
-    const wildClass = value === 1 ? ' card-center-wild-one' : (value === 15 ? ' card-center-wild-wizard' : '');
+    const wildClass = jester ? ' card-center-wild-one' : (wizard ? ' card-center-wild-wizard' : '');
 
     return `
       <div class="card-vignette" aria-hidden="true"></div>
@@ -124,12 +157,12 @@
       <div class="card-art-layer ${artClass}" aria-hidden="true"></div>
       ${illustration}
       <div class="card-corner card-corner-tl">
-        <span class="card-num">${value}</span>
+        <span class="card-num card-value top">${displayValue}</span>
       </div>
-      <div class="card-center-icon${hideEmoji ? ' card-center-icon-hidden' : ''}${wildClass}" aria-hidden="true">${symbol}</div>
+      <div class="card-center-icon card-suit-emoji${hideEmoji ? ' card-center-icon-hidden' : ''}${wildClass}" aria-hidden="true">${symbol}</div>
       ${showSpecialLabel ? `<div class="${labelClass}">${label}</div>` : ''}
       <div class="card-corner card-corner-br">
-        <span class="card-num">${value}</span>
+        <span class="card-num card-value bottom">${displayValue}</span>
       </div>
     `;
   }
@@ -147,6 +180,10 @@
     getCardLabel,
     getMysticArtClass,
     getMysticCardClasses,
+    isJesterCard,
+    isWizardCard,
+    getSuitThemeClass,
+    getCardDisplayValue,
     getIllustrationKey,
     renderCardInnerHTML
   };

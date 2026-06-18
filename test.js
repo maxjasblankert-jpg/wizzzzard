@@ -156,14 +156,80 @@ try {
   assert.strictEqual(Engine.getRoundsCount('standard', 4), 15, 'Standard 4p => 15 rounds');
   assert.strictEqual(SR.createStandardDeck().length, 60, 'Standard deck has 60 cards');
 
-  const wizard = SR.cardObjectFromId(52);
+  const wizard = SR.cardObjectFromId(14);
   const blueFive = SR.cardObjectFromId(4);
   const trickStd = [
     { playerId: 'p1', playerName: 'A', card: blueFive },
     { playerId: 'p2', playerName: 'B', card: wizard }
   ];
   assert.strictEqual(SR.evaluateTrickWinner(trickStd, 0).playerId, 'p2', 'Wizard wins trick');
-  console.log('✅ Test Case 11 Passed: Standard rules (deck, rounds, trick winner).');
+
+  const blueJester = SR.cardObjectFromId(0);
+  assert.strictEqual(blueJester.suit, 'blue', 'Blue Jester is id 0');
+  assert.strictEqual(blueJester.value, 1, 'Jester is card number 1');
+  const redWizard = SR.cardObjectFromId(29);
+  assert.strictEqual(redWizard.suit, 'red', 'Red Wizard is id 29');
+  assert.strictEqual(redWizard.value, 15, 'Wizard is card number 15');
+
+  const blueTwo = SR.cardObjectFromId(1);
+  const blueFourteen = SR.cardObjectFromId(13);
+  assert.strictEqual(blueTwo.value, 2, 'Standard id 1 is rank 2');
+  assert.strictEqual(blueFourteen.value, 14, 'Standard id 13 is rank 14');
+
+  const blueCards = SR.createStandardDeck().filter(c => c.suit === 'blue');
+  assert.strictEqual(blueCards.length, 15, 'One card per rank in blue suit');
+  assert.strictEqual(blueCards.filter(c => c.value === 1).length, 1, 'Only one Jester (1) per suit');
+
+  const trickLeadJester = [{ playerId: 'p1', playerName: 'A', card: blueJester }];
+  assert.strictEqual(SR.getTrickLeadSuit(trickLeadJester, 0), -1, 'Jester lead has no follow color');
+
+  const trickLeadRankTwo = [{ playerId: 'p1', playerName: 'A', card: blueTwo }];
+  assert.strictEqual(SR.getTrickLeadSuit(trickLeadRankTwo, 0), 0, 'Rank-2 colored sets follow color');
+
+  console.log('✅ Test Case 11 Passed: Standard rules (deck, rounds, trick winner, wild suits).');
+
+  require('./public/bot-id-map.js');
+  const IdMap = global.BotIdMap;
+  const SR2 = global.StandardRules;
+
+  for (let appId = 0; appId < 60; appId++) {
+    const botId = IdMap.appCardIdToBotId(appId);
+    const roundTrip = IdMap.botCardIdToAppId(botId);
+    assert.strictEqual(roundTrip, appId, `Bot id round-trip for app id ${appId}`);
+  }
+
+  assert.strictEqual(IdMap.appCardIdToBotId(0), 56, 'Blue Jester (app 0) → bot jester 56');
+  assert.strictEqual(IdMap.appCardIdToBotId(14), 52, 'Blue Wizard (app 14) → bot wizard 52');
+  assert.strictEqual(IdMap.appCardIdToBotId(1), 0, 'Blue 2 (app 1) → bot colored 0');
+  assert.strictEqual(IdMap.botCardIdToAppId(59), 45, 'Bot jester 59 → yellow Jester app 45');
+
+  const blueWizardApp = SR2.cardObjectFromId(14);
+  assert.strictEqual(blueWizardApp.value, 15);
+  assert.strictEqual(IdMap.appCardIdToBotId(blueWizardApp.id), 52);
+
+  console.log('✅ Test Case 12 Passed: Neural bot card id translation (app ↔ training).');
+
+  const seenRoom = {
+    currentRound: 7,
+    trumpCard: { id: 30 },
+    trickWinnerHistory: [
+      { round: 6, cardsPlayed: [{ card: { id: 1 } }, { card: { id: 2 } }] },
+      { round: 7, cardsPlayed: [{ card: { id: 3 } }, { card: { id: 4 } }] },
+      { cardsPlayed: [{ card: { id: 99 } }] }
+    ],
+    currentTrick: [{ card: { id: 5 } }]
+  };
+  const seenIds = SR2.collectSeenCardIds(seenRoom, {});
+  assert.ok(seenIds.includes(30), 'Trump card in seen');
+  assert.ok(seenIds.includes(3) && seenIds.includes(4), 'Current round tricks in seen');
+  assert.ok(seenIds.includes(5), 'Current trick in seen');
+  assert.ok(!seenIds.includes(1) && !seenIds.includes(2), 'Prior round tricks excluded from seen');
+  assert.ok(!seenIds.includes(99), 'Untagged legacy tricks excluded from seen');
+
+  assert.strictEqual(Engine.resolveBotType({ isBot: true }, { mode: 'standard' }), 'neural_v7');
+  assert.strictEqual(Engine.resolveBotType({ isBot: true, botType: 'heuristic' }, { mode: 'standard' }), 'heuristic');
+
+  console.log('✅ Test Case 13 Passed: collectSeenCardIds scoped to current round only.');
 
   console.log('\n🌟 ALL UNIT TESTS PASSED SUCCESSFULLY! 🌟');
 } catch (e) {

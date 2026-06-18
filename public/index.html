@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="mystic-cyber.css">
+  <link rel="stylesheet" href="game-theme.css">
   <!-- Chart.js for premium visualizations -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -63,9 +64,9 @@
           <div class="form-group">
             <label for="select-game-mode">Deck Mode</label>
             <select id="select-game-mode" onchange="updateModeWarning()">
-              <option value="standard" selected>Standard (Official — ML bots)</option>
-              <option value="normal">Normal (60 Cards, 4 Suits)</option>
-              <option value="purple">Purple Mode (75 Cards, 5 Suits)</option>
+              <option value="standard" selected>Standard (ML bots)</option>
+              <option value="normal">HOME Rules</option>
+              <option value="purple">Purple (5 suits)</option>
             </select>
           </div>
         </div>
@@ -88,6 +89,11 @@
             <span class="checkbox-title">Enable Hook Rule</span>
             <span class="checkbox-desc">Last bidder cannot make total bids equal to tricks available.</span>
           </div>
+        </div>
+
+        <div class="lobby-examine-actions">
+          <button type="button" class="btn btn-secondary" onclick="openDeckViewer('create')">Examine Deck</button>
+          <button type="button" class="btn btn-secondary" onclick="openRulesViewer('create')">Examine Rules</button>
         </div>
 
         <button id="btn-create-room" class="btn btn-primary btn-large" onclick="createRoom()">Create Room</button>
@@ -138,7 +144,7 @@
           <div class="form-group">
             <label for="select-calc-game-mode">Deck Mode</label>
             <select id="select-calc-game-mode" onchange="updateCalcModeWarning()">
-              <option value="normal" selected>Normal (60 Cards, 4 Suits)</option>
+              <option value="normal" selected>HOME Rules (60 Cards)</option>
               <option value="purple">Purple Mode (75 Cards, 5 Suits)</option>
             </select>
           </div>
@@ -197,8 +203,10 @@
         </div>
 
         <div class="room-info-badges">
-          <span id="badge-game-mode" class="badge">Normal Mode</span>
+          <span id="badge-game-mode" class="badge">HOME Rules</span>
           <span id="badge-hook-rule" class="badge">Hook Rule: ON</span>
+          <button type="button" class="btn btn-secondary btn-examine-sm" onclick="openDeckViewer('waiting')">Examine Deck</button>
+          <button type="button" class="btn btn-secondary btn-examine-sm" onclick="openRulesViewer('waiting')">Examine Rules</button>
         </div>
       </div>
 
@@ -243,7 +251,7 @@
             <span class="game-meta-sep" aria-hidden="true">·</span>
             <span class="game-meta-label">Room</span>
             <span id="txt-room-code" class="game-meta-room">----</span>
-            <span id="txt-mode-badge" class="badge-mini">Normal</span>
+            <span id="txt-mode-badge" class="badge-mini">HOME Rules</span>
           </div>
           <h3 class="panel-title">Players & Stats</h3>
           <div id="players-stats-list" class="players-stats-container">
@@ -303,7 +311,11 @@
           
           <!-- State banner / Alert Banner -->
           <div id="action-banner" class="action-banner-box">
-            <span id="action-banner-text">Waiting for game to initialize...</span>
+            <div id="action-banner-content" class="game-status-content is-waiting">
+              <span class="status-pulse-dot" aria-hidden="true"></span>
+              <span id="action-banner-avatar" class="status-avatar" aria-hidden="true"></span>
+              <span id="action-banner-text" class="status-text">Waiting for game to initialize…</span>
+            </div>
           </div>
 
           <!-- Dark fantasy steampunk play arena -->
@@ -364,7 +376,7 @@
         <div class="game-info-cell">
           <span class="label">ROUND</span>
           <span id="calc-txt-round" class="val">Round 1</span>
-          <span id="calc-txt-mode-badge" class="badge-mini normal">Normal Mode</span>
+          <span id="calc-txt-mode-badge" class="badge-mini normal">HOME Rules</span>
         </div>
         <div class="job-card-wrapper">
           <div class="job-card-label" style="color: var(--primary);">OFFLINE SCORE TRACKER</div>
@@ -441,14 +453,14 @@
 
     <!-- ROUND SUMMARY & SCORES OVERLAY -->
     <div id="overlay-round-summary" class="fullscreen-overlay hidden">
-      <div class="modal-card glass-panel">
+      <div class="modal-card glass-panel round-summary-modal">
         <h2 id="summary-round-title">Round Summary</h2>
-        <p class="summary-subtitle">Review the round results and sync with the external scorecard.</p>
+        <p class="summary-subtitle">Review round results below. Copy the summary if you use the external score tracker.</p>
 
         <!-- Tabs for results vs chart -->
-        <div class="lobby-tabs" style="border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; display: flex;">
-          <button id="btn-summary-tab-table" class="tab-btn active" onclick="switchSummaryTab('table')" style="font-size: 0.95rem; padding: 8px;">Round Results</button>
-          <button id="btn-summary-tab-chart" class="tab-btn" onclick="switchSummaryTab('chart')" style="font-size: 0.95rem; padding: 8px;">Score Graph</button>
+        <div class="lobby-tabs summary-tabs" role="tablist" aria-label="Round summary views">
+          <button id="btn-summary-tab-table" type="button" class="tab-btn summary-tab-btn active" role="tab" aria-selected="true" onclick="switchSummaryTab('table')">Round Results</button>
+          <button id="btn-summary-tab-chart" type="button" class="tab-btn summary-tab-btn" role="tab" aria-selected="false" onclick="switchSummaryTab('chart')">Score Graph</button>
         </div>
 
         <div id="summary-tab-table-content" class="summary-tab-content active" style="width: 100%;">
@@ -568,6 +580,41 @@
       </div>
     </div>
 
+    <!-- DECK EXAMINER OVERLAY -->
+    <div id="overlay-deck-viewer" class="fullscreen-overlay hidden" role="dialog" aria-labelledby="deck-viewer-title">
+      <div class="modal-card glass-panel deck-viewer-modal">
+        <h2 id="deck-viewer-title">Deck Reference</h2>
+        <div id="deck-viewer-mode-tabs" class="deck-viewer-mode-tabs" role="tablist" aria-label="Deck mode">
+          <button type="button" class="deck-viewer-tab active" data-mode="standard" role="tab" aria-selected="true">Standard</button>
+          <button type="button" class="deck-viewer-tab" data-mode="normal" role="tab" aria-selected="false">HOME</button>
+          <button type="button" class="deck-viewer-tab" data-mode="purple" role="tab" aria-selected="false">Purple</button>
+        </div>
+        <p id="deck-viewer-subtitle" class="deck-viewer-subtitle"></p>
+        <p id="deck-viewer-count" class="deck-viewer-count"></p>
+        <div id="deck-viewer-grid" class="deck-viewer-grid"></div>
+        <div class="modal-footer-actions" style="margin-top: 16px;">
+          <button type="button" class="btn btn-secondary btn-large" onclick="closeDeckViewer()">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RULES REFERENCE OVERLAY -->
+    <div id="overlay-rules-viewer" class="fullscreen-overlay hidden" role="dialog" aria-labelledby="rules-viewer-title">
+      <div class="modal-card glass-panel rules-viewer-modal">
+        <h2 id="rules-viewer-title">Rules Reference</h2>
+        <div id="rules-viewer-mode-tabs" class="deck-viewer-mode-tabs" role="tablist" aria-label="Rules mode">
+          <button type="button" class="deck-viewer-tab active" data-mode="standard" role="tab" aria-selected="true">Standard</button>
+          <button type="button" class="deck-viewer-tab" data-mode="normal" role="tab" aria-selected="false">HOME</button>
+          <button type="button" class="deck-viewer-tab" data-mode="purple" role="tab" aria-selected="false">Purple</button>
+        </div>
+        <p id="rules-viewer-subtitle" class="deck-viewer-subtitle"></p>
+        <div id="rules-viewer-body" class="rules-viewer-body"></div>
+        <div class="modal-footer-actions" style="margin-top: 16px;">
+          <button type="button" class="btn btn-secondary btn-large" onclick="closeRulesViewer()">Close</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -576,9 +623,11 @@
   <script src="firebase-config.js"></script>
   <script src="bot-env.js"></script>
   <script src="card-art.js"></script>
+  <script src="game-rules.js"></script>
   <script src="standard-rules.js"></script>
   <script src="game-engine.js"></script>
   <script src="bot-config.js"></script>
+  <script src="bot-id-map.js"></script>
   <script src="bot-client.js"></script>
   <script src="firebase-game.js"></script>
   <script src="app.js"></script>

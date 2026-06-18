@@ -639,6 +639,7 @@ function startRound(room) {
   });
 
   room.currentTrick = [];
+  room.trickWinnerHistory = [];
 
   // Generate and shuffle fresh deck (excluding the Job Card which was removed from deck)
   let deck = createDeck(room.mode);
@@ -693,6 +694,7 @@ function resolveCompletedTrick(room) {
 
   // Record history
   room.trickWinnerHistory.push({
+    round: room.currentRound,
     trickIndex: room.trickWinnerHistory.length,
     winnerId: winner.playerId,
     winnerName: winner.playerName,

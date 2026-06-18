@@ -266,7 +266,7 @@
         score: p.score,
         roundScores: p.roundScores || [],
         isBot: !!p.isBot,
-        botType: p.botType || (p.isBot ? 'heuristic' : null),
+        botType: p.botType || Engine().resolveBotType({ isBot: p.isBot, botType: storedMeta.botType }, room),
         order: room.playerIds.indexOf(p.id),
         handSize
       }, { merge: true });
@@ -302,7 +302,7 @@
       handSize: p.handSize != null ? p.handSize : (p.hand || []).length,
       roundScores: p.roundScores || [],
       isBot: !!p.isBot,
-      botType: docById[p.id]?.botType || p.botType || null
+      botType: docById[p.id]?.botType || p.botType || Engine().resolveBotType({ isBot: p.isBot, botType: null }, room),
     }));
 
     return {
@@ -535,7 +535,7 @@
 
       if (freshRoom.status === 'bidding') {
         let bidVal;
-        if (global.BotClient && global.BotClient.isNeuralBot(activeNow)) {
+        if (global.BotClient && global.BotClient.isNeuralBot(activeNow, freshRoom)) {
           try {
             bidVal = await global.BotClient.playNeuralBotBid(freshRoom, freshHands, activeNow.id);
           } catch (err) {
@@ -552,7 +552,7 @@
         await persistBidFast(currentRoomCode, freshRoom, activeNow.id);
       } else if (freshRoom.status === 'play') {
         let cardKey;
-        if (global.BotClient && global.BotClient.isNeuralBot(activeNow)) {
+        if (global.BotClient && global.BotClient.isNeuralBot(activeNow, freshRoom)) {
           try {
             cardKey = await global.BotClient.playNeuralBotCard(freshRoom, freshHands, activeNow.id);
           } catch (err) {

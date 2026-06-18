@@ -2,9 +2,14 @@
   const Engine = () => global.GameEngine;
   const SR = () => global.StandardRules;
   const Config = () => global.BotConfig;
+  const IdMap = () => global.BotIdMap;
 
-  function isNeuralBot(player) {
-    return player && (player.botType === 'neural_v6' || player.botType === 'neural_v7');
+  function isNeuralBot(player, room) {
+    if (!player?.isBot) return false;
+    const botType = room && global.GameEngine?.resolveBotType
+      ? global.GameEngine.resolveBotType(player, room)
+      : (player.botType || 'neural_v7');
+    return botType === 'neural_v6' || botType === 'neural_v7';
   }
 
   function modelForBotType(botType) {
@@ -44,32 +49,34 @@
 
     const trick = (room.currentTrick || []).map(entry => ({
       seat: seatIndex(room, entry.playerId),
-      card: entry.card.id
+      card: IdMap().appCardIdToBotId(entry.card.id)
     }));
 
     const legalActions = phase === 'bid'
       ? rules.getLegalBidValues(room.currentRound)
-      : rules.getLegalCardIds(hand, room.currentTrick, room.trumpSuitIndex ?? -1);
+      : IdMap().mapAppIds(rules.getLegalCardIds(hand, room.currentTrick, room.trumpSuitIndex ?? -1));
 
     const handsPayload = {};
-    handsPayload[String(seat)] = hand.map(c => c.id);
+    handsPayload[String(seat)] = IdMap().mapAppIds(hand.map(c => c.id));
 
     return {
       protocol: 1,
-      model: modelForBotType(player?.botType || 'neural_v7'),
+      model: modelForBotType(
+        (global.GameEngine?.resolveBotType?.(player, room) || player?.botType || 'neural_v7')
+      ),
       num_players: room.playerCount,
       seat,
       phase,
       round: room.currentRound,
       trump: room.trumpSuitIndex ?? -1,
-      trump_card: room.trumpCard?.id ?? -1,
+      trump_card: IdMap().appCardIdToBotId(room.trumpCard?.id ?? -1),
       dealer: room.dealerIndex,
       starter: (room.dealerIndex + 1) % room.playerCount,
       hands: handsPayload,
       bids,
       taken,
       trick,
-      seen: rules.collectSeenCardIds(room, handsById),
+      seen: IdMap().mapAppIds(rules.collectSeenCardIds(room, handsById)),
       legal_actions: legalActions
     };
   }
@@ -97,11 +104,11 @@
   async function playNeuralBotCard(room, handsById, playerId) {
     const payload = buildActPayload(room, handsById, playerId, 'play');
     const result = await callBotService(payload);
-    const cardId = result.action;
+    const appCardId = IdMap().botCardIdToAppId(result.action);
     const hand = handsById[playerId] || [];
-    const card = hand.find(c => c.id === cardId);
+    const card = hand.find(c => c.id === appCardId);
     if (!card) {
-      throw new Error(`Neural bot chose card id ${cardId} not in hand`);
+      throw new Error(`Neural bot chose bot id ${result.action} (app id ${appCardId}) not in hand`);
     }
     return card.key;
   }

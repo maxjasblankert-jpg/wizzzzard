@@ -70,10 +70,40 @@ function enrichPlayersWithAvatars(players) {
 function renderPlayerAvatar(player, index) {
   const emoji = getPlayerEmoji(player);
   if (emoji) {
-    return `<span class="player-avatar player-avatar-emoji" aria-hidden="true">${emoji}</span>`;
+    return `<div class="player-avatar player-avatar-emoji" aria-hidden="true">${emoji}</div>`;
   }
   const name = typeof player === 'string' ? player : player?.name;
-  return `<span class="player-avatar ${getPlayerAvatarClass(index)}">${getPlayerInitials(name)}</span>`;
+  return `<div class="player-avatar ${getPlayerAvatarClass(index)}">${getPlayerInitials(name)}</div>`;
+}
+
+function getPlayerStatusLine(player, idx) {
+  const isActive = idx === gameState.activePlayerIndex
+    && (gameState.status === 'bidding' || gameState.status === 'play');
+  if (!player.active) return 'Offline';
+  if (player.isBot) {
+    if (isActive && gameState.status === 'bidding') return 'Placing bid…';
+    if (isActive && gameState.status === 'play') return 'Playing…';
+    return 'Bot';
+  }
+  if (isActive && gameState.status === 'bidding') return 'Placing bid…';
+  if (isActive && gameState.status === 'play') return 'Playing…';
+  if (idx === 0) return 'Host';
+  return '';
+}
+
+function setActionBanner(message, options = {}) {
+  const content = document.getElementById('action-banner-content');
+  const textEl = document.getElementById('action-banner-text');
+  const avatarEl = document.getElementById('action-banner-avatar');
+  if (!content || !textEl) return;
+
+  content.classList.remove('state-your-turn', 'state-waiting', 'state-bidding', 'is-your-turn', 'is-waiting');
+  if (options.bidding) content.classList.add('state-bidding');
+  else if (options.yourTurn) content.classList.add('state-your-turn', 'is-your-turn');
+  else if (options.waiting) content.classList.add('state-waiting', 'is-waiting');
+
+  if (avatarEl) avatarEl.textContent = options.emoji || '';
+  textEl.textContent = message;
 }
 
 function getMaxPlayers() {
@@ -340,6 +370,179 @@ function updateModeWarning() {
       botTypeSelect.value = 'heuristic';
     }
   }
+}
+
+function formatModeLabel(mode) {
+  return window.GameRules?.getModeLabel?.(mode) || mode;
+}
+
+function resolveViewerMode(source) {
+  if (source === 'waiting' && gameState?.mode) return gameState.mode;
+  return document.getElementById('select-game-mode')?.value || 'normal';
+}
+
+function resolveDeckViewerMode(source) {
+  return resolveViewerMode(source);
+}
+
+function resolveRulesViewerMode(source) {
+  return resolveViewerMode(source);
+}
+
+function deckCardDescription(card) {
+  const suitName = SUIT_METADATA[card.suit]?.name || card.suit;
+  if (card.value === 1) return `1 (Jester) — ${suitName}`;
+  if (card.value === 15) return `15 (Wizard) — ${suitName}`;
+  return `${card.value} of ${suitName}`;
+}
+
+let deckViewerTabsReady = false;
+
+function setViewerActiveTab(containerId, mode) {
+  document.querySelectorAll(`#${containerId} .deck-viewer-tab`).forEach(btn => {
+    const active = btn.dataset.mode === mode;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+}
+
+function setDeckViewerActiveTab(mode) {
+  setViewerActiveTab('deck-viewer-mode-tabs', mode);
+}
+
+function renderDeckViewerContent(mode) {
+  const deck = GameEngine.createDeck(mode);
+  const modeLabels = {
+    standard: 'Standard — 60 cards: 1 (Jester), 2–14, and 15 (Wizard) in each of 4 suits',
+    normal: 'HOME Rules — same 60-card deck as Standard',
+    purple: 'Purple — 75 cards: 1 (Jester), 2–14, and 15 (Wizard) in each of 5 suits'
+  };
+
+  document.getElementById('deck-viewer-subtitle').innerText = modeLabels[mode] || mode;
+  document.getElementById('deck-viewer-count').innerText = `${deck.length} cards total`;
+
+  const suits = mode === 'purple'
+    ? ['green', 'blue', 'red', 'yellow', 'purple']
+    : ['green', 'blue', 'red', 'yellow'];
+
+  const grid = document.getElementById('deck-viewer-grid');
+  grid.innerHTML = '';
+
+  suits.forEach(suit => {
+    const section = document.createElement('div');
+    section.className = 'deck-viewer-suit-section';
+    const cards = deck.filter(c => c.suit === suit);
+    cards.sort((a, b) => {
+      const aj = CardArt.isJesterCard(a) ? 0 : (CardArt.isWizardCard(a) ? 99 : a.value);
+      const bj = CardArt.isJesterCard(b) ? 0 : (CardArt.isWizardCard(b) ? 99 : b.value);
+      return aj - bj;
+    });
+
+    section.innerHTML = `<h3 class="deck-viewer-suit-title">${SUIT_METADATA[suit]?.emoji || ''} ${SUIT_METADATA[suit]?.name || suit} <span class="deck-viewer-suit-count">(${cards.length})</span></h3>`;
+    const row = document.createElement('div');
+    row.className = 'deck-viewer-suit-row';
+
+    cards.forEach(card => {
+      const wrap = document.createElement('div');
+      wrap.className = 'deck-viewer-card-wrap';
+      wrap.title = deckCardDescription(card);
+      wrap.innerHTML = buildMiniCardHTML(card, '');
+      const cap = document.createElement('span');
+      cap.className = 'deck-viewer-card-label';
+      cap.innerText = String(card.value);
+      wrap.appendChild(cap);
+      row.appendChild(wrap);
+    });
+
+    section.appendChild(row);
+    grid.appendChild(section);
+  });
+
+  const note = document.createElement('p');
+  note.className = 'deck-viewer-note';
+  note.innerHTML = 'Each suit has one card per rank <strong>1–15</strong>. Card <strong>1</strong> is the Jester and card <strong>15</strong> is the Wizard — they are not extra cards on top of the numbered ranks. Playing a <strong>1</strong> or <strong>15</strong> does not set a follow-suit color.';
+  grid.appendChild(note);
+}
+
+function openDeckViewer(source) {
+  if (!deckViewerTabsReady) {
+    deckViewerTabsReady = true;
+    document.querySelectorAll('#deck-viewer-mode-tabs .deck-viewer-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode;
+        setDeckViewerActiveTab(mode);
+        renderDeckViewerContent(mode);
+      });
+    });
+  }
+
+  const mode = resolveDeckViewerMode(source);
+  document.getElementById('deck-viewer-title').innerText = 'Deck Reference';
+  setDeckViewerActiveTab(mode);
+  renderDeckViewerContent(mode);
+  document.getElementById('overlay-deck-viewer').classList.remove('hidden');
+}
+
+function closeDeckViewer() {
+  document.getElementById('overlay-deck-viewer')?.classList.add('hidden');
+}
+
+let rulesViewerTabsReady = false;
+
+function setRulesViewerActiveTab(mode) {
+  setViewerActiveTab('rules-viewer-mode-tabs', mode);
+}
+
+function renderRulesViewerContent(mode) {
+  const rules = window.GameRules?.getModeRules?.(mode);
+  if (!rules) return;
+
+  document.getElementById('rules-viewer-subtitle').innerText = rules.subtitle || '';
+  const body = document.getElementById('rules-viewer-body');
+  body.innerHTML = '';
+
+  (rules.sections || []).forEach(section => {
+    const block = document.createElement('section');
+    block.className = 'rules-viewer-section';
+
+    const heading = document.createElement('h3');
+    heading.className = 'rules-viewer-section-title';
+    heading.innerText = section.heading;
+    block.appendChild(heading);
+
+    const list = document.createElement('ul');
+    list.className = 'rules-viewer-list';
+    (section.items || []).forEach(item => {
+      const li = document.createElement('li');
+      li.innerHTML = item;
+      list.appendChild(li);
+    });
+    block.appendChild(list);
+    body.appendChild(block);
+  });
+}
+
+function openRulesViewer(source) {
+  if (!rulesViewerTabsReady) {
+    rulesViewerTabsReady = true;
+    document.querySelectorAll('#rules-viewer-mode-tabs .deck-viewer-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode;
+        setRulesViewerActiveTab(mode);
+        renderRulesViewerContent(mode);
+      });
+    });
+  }
+
+  const mode = resolveRulesViewerMode(source);
+  document.getElementById('rules-viewer-title').innerText = 'Rules Reference';
+  setRulesViewerActiveTab(mode);
+  renderRulesViewerContent(mode);
+  document.getElementById('overlay-rules-viewer').classList.remove('hidden');
+}
+
+function closeRulesViewer() {
+  document.getElementById('overlay-rules-viewer')?.classList.add('hidden');
 }
 
 // Helper to toggle screens (no recursion — uses activate* helpers directly)
@@ -640,11 +843,12 @@ function buildMiniCardHTML(card, extraClass = '') {
   const suit = card.suit;
   const meta = SUIT_METADATA[suit];
   const title = `${card.value} of ${meta.name}`;
-  const mysticClass = window.CardArt?.getMysticCardClasses?.(card) || 'mystic-card grimoire-card';
+  const themeClass = window.CardArt?.getSuitThemeClass?.(card) || `suit-${suit}`;
+  const mysticClass = window.CardArt?.getMysticCardClasses?.(card) || `mystic-card grimoire-card game-card ${themeClass}`;
   const trumpTree = extraClass.includes('is-trump') || extraClass.includes('trump');
-  const trumpJobClass = trumpTree ? ' trump-job-card' : '';
+  const trumpJobClass = trumpTree ? ' trump-card-display trump-job-card' : '';
   return `
-    <div class="mini-card suit-${suit} card-val-${card.value} ${mysticClass}${trumpJobClass} ${extraClass}" title="${title}">
+    <div class="mini-card ${themeClass} suit-${suit} card-val-${card.value} ${mysticClass}${trumpJobClass} ${extraClass}" title="${title}">
       ${buildCardFaceHTML(card, { showLabel: false, trumpTree: !!trumpTree })}
     </div>
   `;
@@ -742,7 +946,7 @@ function renderGameState() {
   document.getElementById('txt-room-code').innerText = gameState.roomCode;
   document.getElementById('txt-round-number').innerText = `Round ${gameState.currentRound} of ${gameState.maxRounds}`;
   const modeBadge = document.getElementById('txt-mode-badge');
-  modeBadge.innerText = `${gameState.mode} mode`;
+  modeBadge.innerText = formatModeLabel(gameState.mode);
   modeBadge.className = `badge-mini ${gameState.mode}`;
 
   // 4. Job Card (Trump) — table center + sidebar rail (visible while bidding)
@@ -797,7 +1001,7 @@ function renderWaitingLobby() {
   const seated = gameState.players.length;
 
   const modeBadge = document.getElementById('badge-game-mode');
-  modeBadge.innerText = `${gameState.mode.toUpperCase()} MODE`;
+  modeBadge.innerText = formatModeLabel(gameState.mode);
   modeBadge.className = gameState.mode === 'purple' ? 'badge badge-purple' : 'badge';
 
   document.getElementById('badge-hook-rule').innerText = `Hook Rule: ${gameState.hookRule ? 'ON' : 'OFF'}`;
@@ -849,33 +1053,37 @@ function renderSidebarPanel() {
   gameState.players.forEach((p, idx) => {
     const isActive = idx === gameState.activePlayerIndex && (gameState.status === 'bidding' || gameState.status === 'play');
     const isDealer = idx === gameState.dealerIndex;
+    const isYou = p.id === myPlayerId;
 
     const row = document.createElement('div');
-    row.className = `player-stat-row ${isActive ? 'active-turn' : ''} ${!p.active ? 'inactive' : ''}`;
+    row.className = `player-item ${isYou ? 'is-you' : ''} ${isActive ? 'is-active' : ''} ${!p.active ? 'inactive' : ''}`;
 
-    // Render roles
     let rolesHTML = '';
     if (isDealer) rolesHTML += '<span title="Dealer">⭐</span>';
     if (idx === 0) rolesHTML += '<span title="Host">👑</span>';
 
-    // Bids & Tricks live display
-    let bidText = p.currentBid === null ? '?' : p.currentBid;
-    let bidWonHTML = `
-      <div class="player-stat-row-badges">
-        <span class="stat-badge bid-badge">BID: ${bidText}</span>
-        <span class="stat-badge won-badge">WON: ${p.tricksWon}</span>
-      </div>
-    `;
+    const bidText = p.currentBid === null ? '—' : p.currentBid;
+    const bidPending = p.currentBid === null;
+    const statusLine = getPlayerStatusLine(p, idx);
+    const statusClass = isActive ? 'is-thinking' : '';
 
     row.innerHTML = `
       ${renderPlayerAvatar(p, idx)}
-      <div class="player-stat-info">
-        <div class="player-stat-name">${p.name} ${p.id === myPlayerId ? '(You)' : ''}</div>
-        <div class="player-stat-role-icons">${rolesHTML}</div>
+      <div class="player-info">
+        <div class="player-name">${p.name}${isYou ? '<span class="you-tag">(You)</span>' : ''}</div>
+        <div class="player-status-line ${statusClass}">${statusLine}</div>
+        <div class="player-role-icons">${rolesHTML}</div>
       </div>
-      <div class="player-stat-scores-box">
-        <span class="player-stat-score-total ${p.score >= 0 ? 'score-positive' : 'score-negative'}">${p.score}</span>
-        ${bidWonHTML}
+      <div class="player-stats">
+        <div class="player-stat">
+          <div class="player-stat-value ${bidPending ? 'pending' : ''}">${bidText}</div>
+          <div class="player-stat-label">Bid</div>
+        </div>
+        <div class="player-stats-divider"></div>
+        <div class="player-stat">
+          <div class="player-stat-value">${p.tricksWon}</div>
+          <div class="player-stat-label">Won</div>
+        </div>
       </div>
     `;
 
@@ -890,12 +1098,13 @@ function renderSidebarPanel() {
     const bidText = p.currentBid === null ? '—' : p.currentBid;
     const totalClass = p.score >= 0 ? 'score-positive' : 'score-negative';
     const emoji = getPlayerEmoji(p);
+    const nameClass = p.id === myPlayerId ? 'scoreboard-player is-you' : 'scoreboard-player';
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td style="font-weight: ${p.id === myPlayerId ? '600' : '500'}">${emoji ? emoji + ' ' : ''}${p.name}</td>
-      <td>${bidText}</td>
-      <td>${p.tricksWon}</td>
-      <td class="col-total ${totalClass}">${p.score}</td>
+      <td class="${nameClass}"><span class="scoreboard-player-name">${emoji ? emoji + ' ' : ''}${p.name}</span></td>
+      <td class="scoreboard-num">${bidText}</td>
+      <td class="scoreboard-num">${p.tricksWon}</td>
+      <td class="col-total scoreboard-num ${totalClass}">${p.score}</td>
     `;
     sbBody.appendChild(tr);
   });
@@ -910,36 +1119,30 @@ function renderSidebarPanel() {
 
 // Alert banner message
 function renderActionBanner() {
-  const banner = document.getElementById('action-banner-text');
   const activePlayer = gameState.players[gameState.activePlayerIndex];
+  const activeEmoji = getPlayerEmoji(activePlayer) || '';
 
   if (gameState.paused) {
-    banner.innerText = '⏸️ GAME PAUSED — A player disconnected';
+    setActionBanner('Game paused — a player disconnected', { waiting: true });
     return;
   }
 
   if (gameState.status === 'bidding') {
     if (activePlayer.id === myPlayerId) {
-      banner.innerText = '⚡ Bidding Phase: It is YOUR turn to place a bid!';
-      banner.className = 'glow-pulse';
+      setActionBanner(`Your turn — place your bid for round ${gameState.currentRound}`, { yourTurn: true, bidding: true });
     } else {
-      banner.innerText = `Waiting for ${activePlayer.name} to place their bid...`;
-      banner.className = '';
+      setActionBanner(`${activePlayer.name} is placing their bid`, { waiting: true, emoji: activeEmoji });
     }
   } else if (gameState.status === 'play') {
     if (activePlayer.id === myPlayerId) {
-      banner.innerText = '🃏 Play Phase: It is YOUR turn to play a card!';
-      banner.className = 'glow-pulse';
+      setActionBanner('Your turn — play a card', { yourTurn: true });
     } else {
-      banner.innerText = `Waiting for ${activePlayer.name} to play a card...`;
-      banner.className = '';
+      setActionBanner(`${activePlayer.name} is playing...`, { waiting: true, emoji: activeEmoji });
     }
   } else if (gameState.status === 'round_end') {
-    banner.innerText = '🏁 Round Finished! Review scores and scoresheet.';
-    banner.className = '';
+    setActionBanner(`Round ${gameState.currentRound} complete — review scores`, {});
   } else if (gameState.status === 'game_over') {
-    banner.innerText = '🏆 Game Complete! Winner announced.';
-    banner.className = '';
+    setActionBanner('Game complete — winner announced', {});
   }
 }
 
@@ -1156,20 +1359,20 @@ function renderTableSeats() {
     
     let avatarIcon = getPlayerEmoji(p) || '🧙';
 
-    const botTagHTML = p.isBot ? '<span class="table-seat-bot-tag">Bot</span>' : '';
+    const botTagHTML = p.isBot ? '<span class="bot-tag table-seat-bot-tag">Bot</span>' : '';
     const displayName = p.name;
 
     let bidTrickHTML = '';
     if (gameState.status === 'lobby') {
-      bidTrickHTML = `<span class="table-seat-bidwon bidding">Lobby</span>`;
+      bidTrickHTML = `<span class="table-seat-bidwon">Lobby</span>`;
     } else if (gameState.status === 'bidding') {
       if (p.currentBid === null) {
-        bidTrickHTML = `<span class="table-seat-bidwon bidding">Bidding...</span>`;
+        bidTrickHTML = `<span class="table-seat-bidwon bidding">Bidding…</span>`;
       } else {
-        bidTrickHTML = `<span class="table-seat-bidwon">Bid: ${p.currentBid}</span>`;
+        bidTrickHTML = `<span class="table-seat-bidwon">Bid ${p.currentBid}</span>`;
       }
     } else {
-      let bidText = p.currentBid === null ? '?' : p.currentBid;
+      const bidText = p.currentBid === null ? '—' : p.currentBid;
       bidTrickHTML = `<span class="table-seat-bidwon">${p.tricksWon} / ${bidText}</span>`;
     }
 
@@ -1182,15 +1385,13 @@ function renderTableSeats() {
       ledPlayerId = gameState.players[gameState.activePlayerIndex]?.id;
     }
     if (ledPlayerId && p.id === ledPlayerId) {
-      leadBadge = `<span class="lead-wax-seal">Lead</span>`;
+      leadBadge = `<span class="lead-wax-seal lead-badge">Lead</span>`;
     }
 
     seatDiv.innerHTML = `
-      <div class="table-seat-avatar">
-        ${avatarIcon} <span style="font-size: 0.8rem; margin-left: 4px;">${rolesText}</span>
-      </div>
+      <div class="table-seat-avatar">${avatarIcon}${rolesText ? ` <span class="table-seat-roles">${rolesText}</span>` : ''}</div>
       ${botTagHTML}
-      <div class="table-seat-name">${displayName}</div>
+      <div class="table-seat-name opponent-name">${displayName}</div>
       ${bidTrickHTML}
       ${leadBadge}
     `;
@@ -1242,8 +1443,9 @@ function renderTrickArena() {
     const isNewPlay = trickIndex === trickLen - 1;
     const tilt = trickCardTilt(card.key);
 
+    const themeClass = window.CardArt?.getSuitThemeClass?.(card) || `suit-${card.suit}`;
     slot.innerHTML = `
-      <div class="card-unit suit-${card.suit} card-val-${card.value} ${mysticCardShellClass(card)} ${isTrump ? 'is-trump-color' : ''} ${isNewPlay ? 'card-play-settle' : ''}" style="cursor: default; margin: 0; --table-card-tilt: ${tilt}deg;">
+      <div class="card-unit ${themeClass} suit-${card.suit} card-val-${card.value} ${mysticCardShellClass(card)} ${isTrump ? 'is-trump-color' : ''} ${isNewPlay ? 'card-play-settle' : ''}" style="cursor: default; margin: 0; --table-card-tilt: ${tilt}deg;">
         ${buildCardFaceHTML(card, { isTrump })}
       </div>
     `;
@@ -1367,6 +1569,7 @@ function renderPlayerHand() {
 
   const hasFollowSuit = isStandard
     ? (ledSuit != null && hand.some(c => c.id != null && !StandardRules.isWizard(c.id) && !StandardRules.isJester(c.id)
+        && StandardRules.cardValue(c.id) >= 2
         && StandardRules.suitNameFromIndex(StandardRules.cardSuit(c.id)) === ledSuit))
     : (ledSuit
       ? hand.some(c => c.suit === ledSuit && c.value >= 2 && c.value <= 14)
@@ -1387,16 +1590,19 @@ function renderPlayerHand() {
     }
 
     const isTrump = isChampColorCard(card);
+    const themeClass = window.CardArt?.getSuitThemeClass?.(card) || `suit-${card.suit}`;
     const cardDiv = document.createElement('div');
-    cardDiv.className = `card-unit suit-${card.suit} card-val-${card.value} ${mysticCardShellClass(card)} ${shouldDealAnimate ? 'card-deal-in' : ''} ${isTrump ? 'is-trump-color' : ''} ${!isPlayable && isMyTurn ? 'invalid-play' : ''}`;
+    cardDiv.className = `card-unit ${themeClass} suit-${card.suit} card-val-${card.value} ${mysticCardShellClass(card)} ${shouldDealAnimate ? 'card-deal-in' : ''} ${isTrump ? 'is-trump-color' : ''} ${!isPlayable && isMyTurn ? 'invalid-play' : ''}`;
     if (shouldDealAnimate) {
       cardDiv.style.animationDelay = `${idx * 40}ms`;
     }
 
     if (isPlayable) {
       cardDiv.dataset.cardKey = card.key;
-      cardDiv.classList.add('playable-card');
+      cardDiv.classList.add('playable-card', 'playable');
       if (isMyTurn) cardDiv.classList.add('turn-ready');
+    } else if (isMyTurn) {
+      cardDiv.classList.add('invalid-play', 'not-playable');
     }
 
     cardDiv.innerHTML = buildCardFaceHTML(card, { isTrump });
@@ -1476,10 +1682,13 @@ let handLayoutObserver = null;
 
 function ensureHandLayoutObserver() {
   if (handLayoutObserver) return;
+  const footer = document.querySelector('#game-board.active .game-hand-footer');
   const panel = document.querySelector('#game-board.active .my-hand-panel');
-  if (!panel || typeof ResizeObserver === 'undefined') return;
+  const target = footer || panel;
+  if (!target || typeof ResizeObserver === 'undefined') return;
   handLayoutObserver = new ResizeObserver(() => schedulePlayerHandLayout());
-  handLayoutObserver.observe(panel);
+  handLayoutObserver.observe(target);
+  if (panel && panel !== target) handLayoutObserver.observe(panel);
 }
 
 function schedulePlayerHandLayout() {
@@ -1489,45 +1698,57 @@ function schedulePlayerHandLayout() {
   });
 }
 
-/** Fit hand cards in the footer; large hands (16+) scroll with less overlap for readability. */
+/** Minimum overlap (px hidden per card step) needed so the row fits targetSpan. */
+function overlapToFitSpan(cardW, count, targetSpan) {
+  if (count <= 1) return 0;
+  return cardW - (targetSpan - cardW) / (count - 1);
+}
+
+function rotationPadding(cardW, count, rotStep, aspect) {
+  if (count <= 1) return 0;
+  const maxRot = ((count - 1) / 2) * rotStep;
+  const cardH = cardW * aspect;
+  return Math.ceil(Math.sin(maxRot * Math.PI / 180) * cardH * 0.35 + cardW * 0.05);
+}
+
+/** Largest card width that fits; uses minOverlap fan spacing unless tighter fit is required. */
+function bestHandFit(targetSpan, count, minW, maxW, minVisible, minOverlap) {
+  if (count <= 1) {
+    const cardW = Math.floor(Math.max(minW, Math.min(maxW, targetSpan)));
+    return { cardW, overlap: 0 };
+  }
+
+  for (let cardW = Math.floor(maxW); cardW >= minW; cardW--) {
+    const needOverlap = overlapToFitSpan(cardW, count, targetSpan);
+    const maxOverlap = cardW - minVisible;
+    const overlap = Math.max(minOverlap, Math.min(Math.max(0, needOverlap), maxOverlap));
+    if (handRowSpan(cardW, overlap, count) <= targetSpan) {
+      return { cardW, overlap };
+    }
+  }
+
+  const cardW = minW;
+  const overlap = Math.max(
+    minOverlap,
+    Math.min(overlapToFitSpan(cardW, count, targetSpan), cardW - minVisible)
+  );
+  return { cardW, overlap: Math.max(0, overlap) };
+}
+
+/** Layout tiers: minVisible caps overlap; minOverlap keeps a light fan when space allows. */
 function handLayoutProfile(count) {
-  if (count > 15) {
-    return {
-      minVisible: 48,
-      defaultOverlap: 8,
-      maxW: 82,
-      minW: 56,
-      rotStep: 0.45,
-      scrollMode: true
-    };
+  if (count > 11) {
+    return { minVisible: 30, minOverlap: 5, maxW: 72, minW: 44, rotStep: 0.85 };
   }
-  if (count > 12) {
-    return {
-      minVisible: 38,
-      defaultOverlap: 5,
-      maxW: 96,
-      minW: 44,
-      rotStep: 0.9,
-      scrollMode: false
-    };
-  }
-  if (count > 8) {
-    return {
-      minVisible: 32,
-      defaultOverlap: 5,
-      maxW: 100,
-      minW: 42,
-      rotStep: 1.25,
-      scrollMode: false
-    };
+  if (count > 7) {
+    return { minVisible: 28, minOverlap: 4, maxW: 72, minW: 42, rotStep: 1.2 };
   }
   return {
-    minVisible: 28,
-    defaultOverlap: 6,
-    maxW: 108,
+    minVisible: 24,
+    minOverlap: 3,
+    maxW: 72,
     minW: 40,
-    rotStep: count > 6 ? 1.75 : 2.25,
-    scrollMode: false
+    rotStep: count > 5 ? 1.5 : 2
   };
 }
 
@@ -1541,43 +1762,48 @@ function sizePlayerHandRow() {
   const count = container.querySelectorAll('.card-unit').length;
   if (count === 0) return;
 
-  const profile = handLayoutProfile(count);
-  container.classList.toggle('hand-scrollable', profile.scrollMode);
-
   const panel = container.closest('.my-hand-panel');
-  const availW = Math.max(40, (panel?.clientWidth ?? container.clientWidth) - 20);
+  const footer = panel?.closest('.game-hand-footer');
+  const availW = Math.max(40, footer?.clientWidth ?? panel?.clientWidth ?? container.clientWidth);
   const aspect = 152 / 108;
-  const { minVisible, defaultOverlap, maxW, minW, rotStep } = profile;
+  const profile = handLayoutProfile(count);
+  const { minVisible, minOverlap, maxW, minW, rotStep } = profile;
 
-  let cardW = maxW;
-  let overlap = defaultOverlap;
+  let rotPad = rotationPadding(maxW, count, rotStep, aspect);
+  let targetSpan = Math.max(40, availW - rotPad * 2);
+  const needsScroll = count > 1 && handRowSpan(minW, Math.max(minOverlap, minW - minVisible), count) > targetSpan;
 
-  if (profile.scrollMode) {
-    cardW = Math.min(maxW, Math.max(minW, 76));
-    overlap = Math.max(defaultOverlap, cardW - minVisible);
-  } else if (handRowSpan(cardW, overlap, count) > availW) {
-    cardW = count === 1 ? availW : (availW + (count - 1) * overlap) / count;
+  container.classList.toggle('hand-scrollable', needsScroll);
+  container.style.width = '';
+  container.style.margin = '';
+
+  let cardW;
+  let overlap;
+
+  if (needsScroll) {
+    cardW = Math.floor(Math.min(88, Math.max(60, Math.min(84, availW * 0.14))));
+    overlap = Math.max(minOverlap, cardW - minVisible);
+  } else {
+    ({ cardW, overlap } = bestHandFit(targetSpan, count, minW, maxW, minVisible, minOverlap));
+
+    const fittedRotPad = rotationPadding(cardW, count, rotStep, aspect);
+    if (fittedRotPad !== rotPad) {
+      rotPad = fittedRotPad;
+      targetSpan = Math.max(40, availW - fittedRotPad * 2);
+      ({ cardW, overlap } = bestHandFit(targetSpan, count, minW, maxW, minVisible, minOverlap));
+    }
+
+    const span = handRowSpan(cardW, overlap, count);
+    container.style.width = `${span}px`;
+    container.style.margin = '0 auto';
   }
-  cardW = Math.floor(Math.max(minW, Math.min(maxW, cardW)));
 
-  if (!profile.scrollMode && handRowSpan(cardW, overlap, count) > availW && count > 1) {
-    overlap = cardW - (availW - cardW) / (count - 1);
-    overlap = Math.max(defaultOverlap, Math.min(overlap, cardW - minVisible));
-  }
-
-  const maxRot = ((count - 1) / 2) * rotStep;
+  const sidePad = Math.ceil(overlap / 2 + rotPad);
   const cardH = Math.floor(cardW * aspect);
-  const rotPad = Math.ceil(Math.sin(maxRot * Math.PI / 180) * cardH * 0.35 + cardW * 0.05);
-
-  if (!profile.scrollMode && handRowSpan(cardW, overlap, count) + rotPad * 2 > availW && count > 1) {
-    const targetW = Math.max(cardW, availW - rotPad * 2);
-    overlap = cardW - (targetW - cardW) / (count - 1);
-    overlap = Math.max(overlap, cardW - minVisible);
-  }
-
   board.style.setProperty('--card-width', `${cardW}px`);
   board.style.setProperty('--card-height', `${cardH}px`);
   board.style.setProperty('--hand-overlap', `${(overlap / 2).toFixed(1)}px`);
+  board.style.setProperty('--hand-side-pad', `${sidePad}px`);
   applyHandCardTransforms(container, count, rotStep);
 }
 
@@ -1601,7 +1827,7 @@ function renderRoundSummary() {
       <td>${p.name} ${p.id === myPlayerId ? '(You)' : ''}</td>
       <td>${roundScore.bid}</td>
       <td>${roundScore.won}</td>
-      <td class="${roundScore.change >= 0 ? 'positive' : 'negative'}">${roundScore.change >= 0 ? '+' : ''}${roundScore.change}</td>
+      <td class="score-delta ${roundScore.change >= 0 ? 'positive' : 'negative'}">${roundScore.change >= 0 ? '+' : ''}${roundScore.change}</td>
       <td style="font-weight: bold;">${roundScore.total}</td>
     `;
     body.appendChild(tr);
@@ -1716,16 +1942,17 @@ const activeCharts = {};
 function getChartTheme(canvasId) {
   const canvas = document.getElementById(canvasId);
   const onParchment = canvas?.closest('.modal-card, .parchment-card, .sidebar-panel, .glass-panel');
+  const highContrast = canvasId === 'multiplayer-summary-chart' || canvasId === 'multiplayer-gameover-chart';
   if (onParchment) {
     return {
-      legendColor: '#1a1208',
-      tickColor: '#6b5a3a',
-      gridColor: 'rgba(107, 90, 58, 0.15)',
+      legendColor: highContrast ? '#1a1208' : '#1a1208',
+      tickColor: highContrast ? '#3d3020' : '#6b5a3a',
+      gridColor: highContrast ? 'rgba(60, 45, 25, 0.22)' : 'rgba(107, 90, 58, 0.15)',
       pointBorder: '#1a1208',
       tooltipBg: 'rgba(247, 237, 213, 0.98)',
       tooltipTitle: '#1a1208',
-      tooltipBody: '#6b5a3a',
-      tooltipBorder: 'rgba(200, 170, 114, 0.45)'
+      tooltipBody: '#3d3020',
+      tooltipBorder: 'rgba(120, 90, 40, 0.5)'
     };
   }
   return {
@@ -1772,14 +1999,9 @@ function renderScoreProgressionChart(canvasId, playersList) {
   const theme = getChartTheme(canvasId);
 
   // High-contrast palette — easy to tell players apart on parchment
-  const themeColors = [
-    '#059669',  // emerald green
-    '#2563eb',  // vivid blue
-    '#dc2626',  // red
-    '#d97706',  // amber
-    '#9333ea',  // purple
-    '#0891b2'   // cyan
-  ];
+  const themeColors = canvasId === 'multiplayer-summary-chart' || canvasId === 'multiplayer-gameover-chart'
+    ? ['#047857', '#1d4ed8', '#b91c1c', '#b45309', '#7e22ce', '#0e7490']
+    : ['#059669', '#2563eb', '#dc2626', '#d97706', '#9333ea', '#0891b2'];
 
   const datasets = playersList.map((player, index) => {
     const dataPoints = [0];
@@ -1795,7 +2017,7 @@ function renderScoreProgressionChart(canvasId, playersList) {
       data: dataPoints,
       borderColor: color,
       backgroundColor: color + '18',
-      borderWidth: 3,
+      borderWidth: canvasId === 'multiplayer-summary-chart' || canvasId === 'multiplayer-gameover-chart' ? 3.5 : 3,
       tension: 0.25,
       pointRadius: 5,
       pointHoverRadius: 7,
@@ -1896,14 +2118,18 @@ function switchSummaryTab(tab) {
 
   btnTable.classList.remove('active');
   btnChart.classList.remove('active');
+  btnTable.setAttribute('aria-selected', 'false');
+  btnChart.setAttribute('aria-selected', 'false');
   divTable.style.display = 'none';
   divChart.style.display = 'none';
 
   if (tab === 'table') {
     btnTable.classList.add('active');
+    btnTable.setAttribute('aria-selected', 'true');
     divTable.style.display = 'block';
   } else {
     btnChart.classList.add('active');
+    btnChart.setAttribute('aria-selected', 'true');
     divChart.style.display = 'block';
     
     // Draw the line chart inside multiplayer modal
@@ -2019,7 +2245,7 @@ function startCalculator() {
     });
   }
 
-  // Normal: 4 suits × 15 = 60 cards. Purple mode: 5 suits × 15 = 75 cards.
+  // HOME / Standard: 4 suits × 15 = 60 cards. Purple: 5 suits × 15 = 75 cards.
   const cardsCount = mode === 'purple' ? 75 : 60;
   const maxRounds = Math.floor(cardsCount / count);
 
@@ -2066,7 +2292,7 @@ function startCalculator() {
 function initCalcRoundUI() {
   document.getElementById('calc-txt-round').innerText = `Round ${calcState.currentRound} of ${calcState.maxRounds}`;
   const modeBadge = document.getElementById('calc-txt-mode-badge');
-  modeBadge.innerText = `${calcState.mode} mode`;
+  modeBadge.innerText = formatModeLabel(calcState.mode);
   modeBadge.className = `badge-mini ${calcState.mode}`;
 
   const bannerText = document.getElementById('calc-action-banner-text');

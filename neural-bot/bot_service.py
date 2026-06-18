@@ -192,6 +192,7 @@ def _rebuild_sim(req: ActRequest) -> tuple[WizardSimulator, int]:
         sim.bids[i] = 0 if i >= len(req.bids) or req.bids[i] is None else int(req.bids[i])
         sim.taken[i] = int(req.taken[i]) if i < len(req.taken) else 0
 
+    sim.tricks_played = int(sim.taken.sum())
     sim._bids_placed = sum(1 for b in req.bids if b is not None)
     return sim, seat
 

@@ -1,0 +1,1026 @@
+/* ═══ Wizzzzard In-Game Dark Fantasy Theme ═══ */
+
+:root {
+  --game-bg-deep: #050c17;
+  --game-bg-board: #07111d;
+  --game-bg-sidebar: rgba(8, 16, 28, 0.97);
+  --game-bg-card: rgba(255, 255, 255, 0.04);
+  --game-bg-hover: rgba(255, 255, 255, 0.07);
+  --game-border-subtle: rgba(255, 255, 255, 0.08);
+  --game-border-mid: rgba(255, 255, 255, 0.15);
+  --game-border-active: rgba(255, 200, 80, 0.35);
+  --game-text-primary: rgba(220, 230, 255, 0.92);
+  --game-text-secondary: rgba(180, 195, 220, 0.55);
+  --game-text-muted: rgba(140, 155, 180, 0.35);
+  --game-text-gold: rgba(255, 200, 80, 0.85);
+  --suit-fire: #ff6b5e;
+  --suit-water: #5eb4ff;
+  --suit-nature: #5ede8a;
+  --suit-light: #ffd666;
+  --suit-arcane: #c080ff;
+  --glow-fire: rgba(255, 80, 50, 0.45);
+  --glow-water: rgba(55, 130, 255, 0.45);
+  --glow-nature: rgba(40, 180, 90, 0.45);
+  --glow-light: rgba(255, 200, 50, 0.45);
+  --glow-arcane: rgba(160, 60, 255, 0.45);
+  --game-gold: #f5c842;
+  --game-success: #4ade80;
+  --game-danger: #f87171;
+}
+
+/* ─── Page / nav while in game ─── */
+#app-container:has(#game-board.active) {
+  background: var(--game-bg-deep);
+}
+
+#app-container:has(#game-board.active) .main-tab-bar {
+  background: rgba(5, 10, 20, 0.98);
+  border-bottom: 0.5px solid var(--game-border-subtle);
+  padding: 4px 12px;
+  gap: 4px;
+}
+
+#app-container:has(#game-board.active) .tab-btn {
+  padding: 6px 18px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(180, 195, 220, 0.4);
+  border: 0.5px solid transparent;
+  background: transparent;
+}
+
+#app-container:has(#game-board.active) .tab-btn:hover {
+  color: rgba(180, 195, 220, 0.75);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+#app-container:has(#game-board.active) .tab-btn.active {
+  color: rgba(255, 200, 80, 0.95);
+  background: rgba(255, 200, 80, 0.1);
+  border-color: rgba(255, 200, 80, 0.25);
+}
+
+/* ─── Game board surface ─── */
+#game-board.active {
+  background: var(--game-bg-deep);
+}
+
+#game-board.active .center-board {
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(20, 40, 20, 0.35) 0%, transparent 65%),
+    radial-gradient(ellipse at 50% 45%, rgba(5, 15, 30, 0.6) 0%, transparent 90%),
+    var(--game-bg-board);
+  border: 0.5px solid var(--game-border-subtle);
+  color: var(--game-text-primary);
+  box-shadow: none;
+}
+
+#game-board.active .center-board::before,
+#game-board.active .center-board::after {
+  display: none;
+}
+
+#game-board.active .game-meta-compact {
+  color: var(--game-text-secondary);
+  font-size: 11px;
+}
+
+#game-board.active .game-meta-round {
+  color: var(--game-text-gold);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+#game-board.active .badge-mini {
+  background: rgba(255, 200, 80, 0.08);
+  border: 0.5px solid rgba(255, 200, 80, 0.2);
+  color: var(--game-text-gold);
+  font-size: 10px;
+}
+
+/* ─── Sidebar (unified dark) ─── */
+#game-board.active .sidebar-panel {
+  background: var(--game-bg-sidebar);
+  border-right: 0.5px solid var(--game-border-subtle);
+  border: 0.5px solid var(--game-border-subtle);
+  color: var(--game-text-primary);
+  box-shadow: none;
+}
+
+#game-board.active .sidebar-panel::before,
+#game-board.active .sidebar-panel::after {
+  display: none;
+}
+
+#game-board.active .panel-title {
+  color: rgba(255, 200, 80, 0.5);
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 500;
+  border-bottom: 0.5px solid var(--game-border-subtle);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+#game-board.active .sidebar-divider {
+  background: var(--game-border-subtle);
+  height: 0.5px;
+  margin: 8px 0;
+}
+
+/* Player panels */
+#game-board.active .player-item {
+  background: var(--game-bg-card);
+  border: 0.5px solid var(--game-border-mid);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  transition: border-color 0.2s, background 0.2s;
+  min-width: 0;
+}
+
+#game-board.active .player-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+#game-board.active .player-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--game-text-primary);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#game-board.active .player-item.is-you {
+  background: rgba(255, 200, 80, 0.05);
+  border-color: rgba(255, 200, 80, 0.28);
+}
+
+#game-board.active .player-item.is-active {
+  background: rgba(255, 200, 80, 0.07);
+  border-color: rgba(255, 200, 80, 0.4);
+}
+
+#game-board.active .player-item.inactive {
+  opacity: 0.45;
+}
+
+#game-board.active .player-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(100, 130, 200, 0.12);
+  border: 1px solid rgba(100, 130, 200, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+#game-board.active .player-item.is-you .player-avatar {
+  background: rgba(255, 200, 80, 0.1);
+  border-color: rgba(255, 200, 80, 0.3);
+}
+
+#game-board.active .player-name .you-tag {
+  font-size: 10px;
+  color: rgba(255, 200, 80, 0.55);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+#game-board.active .player-role-icons {
+  font-size: 11px;
+  margin-top: 1px;
+}
+
+#game-board.active .player-status-line {
+  font-size: 10px;
+  color: var(--game-text-muted);
+  margin-top: 2px;
+}
+
+#game-board.active .player-status-line.is-thinking {
+  color: rgba(255, 200, 80, 0.45);
+}
+
+#game-board.active .player-stats {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+#game-board.active .player-stat {
+  text-align: center;
+  min-width: 28px;
+}
+
+#game-board.active .player-stat-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+}
+
+#game-board.active .player-stat-value.pending {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 13px;
+}
+
+#game-board.active .player-stat-label {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.25);
+  margin-top: 2px;
+}
+
+#game-board.active .player-stats-divider {
+  width: 0.5px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+#game-board.active .player-total-score {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--game-gold);
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+#game-board.active .player-total-score.score-negative {
+  color: var(--game-danger);
+}
+
+/* Scoreboard table */
+#game-board.active .scoreboard-scroll {
+  background: rgba(0, 0, 0, 0.22);
+  border: 0.5px solid var(--game-border-subtle);
+  border-radius: 8px;
+  max-height: none;
+}
+
+#game-board.active .scoreboard-table {
+  width: 100%;
+  font-size: 12px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+#game-board.active .scoreboard-table th {
+  color: rgba(255, 200, 80, 0.55);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 6px 4px;
+  border-bottom: 0.5px solid var(--game-border-subtle);
+  text-align: left;
+}
+
+#game-board.active .scoreboard-table td {
+  color: var(--game-text-primary);
+  padding: 6px 4px;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.04);
+  vertical-align: middle;
+}
+
+#game-board.active .scoreboard-table th:nth-child(1),
+#game-board.active .scoreboard-table td:nth-child(1) {
+  width: 44%;
+  padding-left: 8px;
+}
+
+#game-board.active .scoreboard-table th:nth-child(2),
+#game-board.active .scoreboard-table td:nth-child(2),
+#game-board.active .scoreboard-table th:nth-child(3),
+#game-board.active .scoreboard-table td:nth-child(3) {
+  width: 14%;
+  text-align: center;
+}
+
+#game-board.active .scoreboard-table th:nth-child(4),
+#game-board.active .scoreboard-table td:nth-child(4) {
+  width: 20%;
+  text-align: right;
+  padding-right: 8px;
+}
+
+#game-board.active .scoreboard-player-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#game-board.active .scoreboard-player.is-you .scoreboard-player-name {
+  font-weight: 600;
+  color: var(--game-text-gold);
+}
+
+#game-board.active .scoreboard-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+#game-board.active .scoreboard-table td.col-total,
+#game-board.active .scoreboard-table td:last-child {
+  color: var(--game-gold);
+  font-weight: 700;
+}
+
+#game-board.active .scoreboard-table td.col-total.score-negative,
+#game-board.active .scoreboard-table .score-negative {
+  color: var(--game-danger);
+}
+
+#game-board.active .scoreboard-table .score-positive {
+  color: var(--game-gold);
+}
+
+/* End game button */
+#game-board.active #btn-end-game {
+  background: rgba(248, 113, 113, 0.1);
+  border: 0.5px solid rgba(248, 113, 113, 0.3);
+  color: rgba(248, 113, 113, 0.8);
+  border-radius: 8px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 10px;
+  width: 100%;
+}
+
+#game-board.active #btn-end-game:hover {
+  background: rgba(248, 113, 113, 0.18);
+  border-color: rgba(248, 113, 113, 0.5);
+}
+
+#game-board.active .host-end-game-note {
+  color: var(--game-text-muted);
+  font-size: 10px;
+}
+
+/* ─── Status bar ─── */
+#game-board.active .action-banner-box {
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  margin-bottom: 8px;
+  background: transparent;
+  border: none;
+}
+
+#game-board.active .game-status-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  max-width: 440px;
+  width: fit-content;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.04);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+}
+
+#game-board.active .game-status-content.state-your-turn,
+#game-board.active .game-status-content.is-your-turn {
+  background: rgba(255, 200, 80, 0.08);
+  border-color: rgba(255, 200, 80, 0.3);
+}
+
+#game-board.active .game-status-content.state-waiting,
+#game-board.active .game-status-content.is-waiting {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+#game-board.active .game-status-content.state-bidding {
+  background: rgba(94, 180, 255, 0.06);
+  border-color: rgba(94, 180, 255, 0.25);
+}
+
+#game-board.active .game-status-content.state-your-turn .status-pulse-dot,
+#game-board.active .game-status-content.is-your-turn .status-pulse-dot {
+  display: block;
+}
+
+#game-board.active .game-status-content.state-waiting .status-pulse-dot,
+#game-board.active .game-status-content.is-waiting .status-pulse-dot {
+  display: block;
+  background: rgba(255, 200, 80, 0.6);
+}
+
+#game-board.active .status-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--game-gold);
+  animation: gameStatusPulse 1.6s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+#game-board.active .game-status-content:not(.is-waiting):not(.state-waiting):not(.is-your-turn):not(.state-your-turn) .status-pulse-dot {
+  display: none;
+}
+
+@keyframes gameStatusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.65); }
+}
+
+#game-board.active .status-avatar {
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+#game-board.active .status-text {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(200, 215, 240, 0.7);
+}
+
+#game-board.active .game-status-content.state-your-turn .status-text,
+#game-board.active .game-status-content.is-your-turn .status-text {
+  color: rgba(255, 200, 80, 0.95);
+}
+
+#game-board.active .game-status-content.state-waiting .status-text,
+#game-board.active .game-status-content.is-waiting .status-text {
+  color: rgba(180, 195, 220, 0.5);
+}
+
+#game-board.active .game-status-content.state-bidding .status-text {
+  color: rgba(94, 180, 255, 0.85);
+}
+
+/* ─── Table seats / opponents ─── */
+#game-board.active .table-seat {
+  background: rgba(8, 16, 28, 0.85);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 14px;
+  min-width: 110px;
+  text-align: center;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+#game-board.active .table-seat.active-turn {
+  border-color: rgba(255, 200, 80, 0.35);
+  background: rgba(255, 200, 80, 0.04);
+}
+
+#game-board.active .table-seat-bot-tag,
+#game-board.active .bot-tag {
+  display: inline-block;
+  background: rgba(100, 120, 180, 0.15);
+  border: 0.5px solid rgba(100, 120, 180, 0.3);
+  border-radius: 4px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(120, 150, 220, 0.7);
+  padding: 2px 6px;
+  margin-bottom: 4px;
+}
+
+#game-board.active .table-seat-bidwon.bidding {
+  font-size: 11px;
+  color: rgba(255, 200, 80, 0.5);
+  font-style: italic;
+  animation: gameFadeInOut 1.2s ease-in-out infinite;
+}
+
+@keyframes gameFadeInOut {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
+}
+
+#game-board.active .table-seat-name,
+#game-board.active .opponent-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(200, 215, 240, 0.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90px;
+}
+
+#game-board.active .table-seat-avatar {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+/* ─── Trump display ─── */
+#game-board.active .table-trump-label,
+#game-board.active .trump-label {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(255, 200, 80, 0.5);
+}
+
+#game-board.active .table-center-trump .mini-card,
+#game-board.active .job-card-box .mini-card.trump-card-display {
+  width: 76px;
+  height: 108px;
+  border-radius: 10px;
+}
+
+#game-board.active .table-center-trump .mini-card.suit-fire,
+#game-board.active .job-card-box .mini-card.suit-fire.trump-card-display {
+  box-shadow: 0 0 30px rgba(255, 80, 50, 0.4), 0 0 60px rgba(255, 80, 50, 0.15), 0 4px 16px rgba(0, 0, 0, 0.7);
+}
+
+#game-board.active .table-center-trump .mini-card.suit-water,
+#game-board.active .job-card-box .mini-card.suit-water.trump-card-display {
+  box-shadow: 0 0 30px rgba(55, 130, 255, 0.4), 0 0 60px rgba(55, 130, 255, 0.15), 0 4px 16px rgba(0, 0, 0, 0.7);
+}
+
+#game-board.active .table-center-trump .mini-card.suit-nature,
+#game-board.active .job-card-box .mini-card.suit-nature.trump-card-display {
+  box-shadow: 0 0 30px rgba(40, 180, 90, 0.4), 0 0 60px rgba(40, 180, 90, 0.15), 0 4px 16px rgba(0, 0, 0, 0.7);
+}
+
+#game-board.active .table-center-trump .mini-card.suit-light,
+#game-board.active .job-card-box .mini-card.suit-light.trump-card-display {
+  box-shadow: 0 0 30px rgba(255, 200, 50, 0.4), 0 0 60px rgba(255, 200, 50, 0.15), 0 4px 16px rgba(0, 0, 0, 0.7);
+}
+
+#game-board.active .table-center-trump .mini-card.suit-arcane,
+#game-board.active .job-card-box .mini-card.suit-arcane.trump-card-display {
+  box-shadow: 0 0 30px rgba(160, 60, 255, 0.4), 0 0 60px rgba(160, 60, 255, 0.15), 0 4px 16px rgba(0, 0, 0, 0.7);
+}
+
+#game-board.active .table-center-trump .card-center-icon,
+#game-board.active .job-card-box .trump-card-display .card-center-icon {
+  font-size: 28px;
+}
+
+#game-board.active .mystic-trump-banner,
+#game-board.active .table-center-trump {
+  background: radial-gradient(ellipse at center, rgba(15, 35, 15, 0.5) 0%, transparent 75%);
+  border: 0.5px solid rgba(255, 200, 80, 0.1);
+  border-radius: 50%;
+  padding: 8px;
+}
+
+/* ─── Bid panel ─── */
+#game-board.active .bid-panel-top-inner,
+#game-board.active .bid-panel-controls {
+  background: rgba(255, 200, 80, 0.06);
+  border: 0.5px solid rgba(255, 200, 80, 0.25);
+  border-radius: 12px;
+}
+
+#game-board.active .bid-overlay-title {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 200, 80, 0.55);
+  margin-bottom: 12px;
+}
+
+#game-board.active .bid-stepper-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+#game-board.active .btn-bid-step {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  color: rgba(220, 230, 255, 0.85);
+  font-size: 20px;
+  font-weight: 300;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+#game-board.active .btn-bid-step:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+#game-board.active .bid-stepper-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  min-width: 48px;
+  text-align: center;
+}
+
+#game-board.active .bid-confirm-btn,
+#game-board.active #btn-confirm-bid {
+  width: 100%;
+  padding: 11px;
+  border-radius: 8px;
+  background: rgba(255, 200, 80, 0.15);
+  border: 0.5px solid rgba(255, 200, 80, 0.4);
+  color: rgba(255, 200, 80, 0.95);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#game-board.active .bid-confirm-btn:hover:not(:disabled),
+#game-board.active #btn-confirm-bid:hover:not(:disabled) {
+  background: rgba(255, 200, 80, 0.25);
+  border-color: rgba(255, 200, 80, 0.65);
+}
+
+#game-board.active .hook-warning {
+  font-size: 11px;
+  color: rgba(251, 146, 60, 0.75);
+}
+
+/* ─── Hand footer ─── */
+#game-board.active .my-hand-panel {
+  background: rgba(5, 10, 18, 0.95);
+  border-top: 0.5px solid var(--game-border-subtle);
+  border-radius: 0 0 12px 12px;
+}
+
+/* ─── Playing cards — suit themes ─── */
+.game-card.suit-fire,
+.mini-card.suit-fire,
+.card-unit.suit-fire {
+  background: linear-gradient(150deg, #1a0505, #260808) !important;
+  border: 1.5px solid rgba(196, 68, 68, 0.6) !important;
+}
+
+.game-card.suit-water,
+.mini-card.suit-water,
+.card-unit.suit-water {
+  background: linear-gradient(150deg, #030e1c, #05122a) !important;
+  border: 1.5px solid rgba(55, 130, 255, 0.55) !important;
+}
+
+.game-card.suit-nature,
+.mini-card.suit-nature,
+.card-unit.suit-nature {
+  background: linear-gradient(150deg, #021005, #041a08) !important;
+  border: 1.5px solid rgba(50, 160, 80, 0.55) !important;
+}
+
+.game-card.suit-light,
+.mini-card.suit-light,
+.card-unit.suit-light {
+  background: linear-gradient(150deg, #151008, #201808) !important;
+  border: 1.5px solid rgba(200, 160, 50, 0.55) !important;
+}
+
+.game-card.suit-arcane,
+.mini-card.suit-arcane,
+.card-unit.suit-arcane {
+  background: linear-gradient(150deg, #0d0518, #180a26) !important;
+  border: 1.5px solid rgba(150, 70, 230, 0.55) !important;
+}
+
+.game-card.suit-wizard,
+.mini-card.suit-wizard,
+.card-unit.suit-wizard {
+  background: linear-gradient(150deg, #0a0818, #120e28) !important;
+  border: 1.5px solid rgba(200, 160, 255, 0.7) !important;
+  box-shadow: inset 0 0 20px rgba(160, 80, 255, 0.08);
+}
+
+.game-card.suit-jester,
+.mini-card.suit-jester,
+.card-unit.suit-jester {
+  background: linear-gradient(150deg, #100808, #1a1010) !important;
+  border: 1.5px solid rgba(200, 200, 200, 0.25) !important;
+}
+
+/* Card values */
+.suit-fire .card-value,
+.suit-fire .card-num { color: var(--suit-fire); }
+.suit-water .card-value,
+.suit-water .card-num { color: var(--suit-water); }
+.suit-nature .card-value,
+.suit-nature .card-num { color: var(--suit-nature); }
+.suit-light .card-value,
+.suit-light .card-num { color: var(--suit-light); }
+.suit-arcane .card-value,
+.suit-arcane .card-num { color: var(--suit-arcane); }
+.suit-wizard .card-value,
+.suit-wizard .card-num { color: #d4aaff; }
+.suit-jester .card-value,
+.suit-jester .card-num { color: rgba(200, 200, 200, 0.7); }
+
+/* Emoji glow */
+.suit-fire .card-center-icon { filter: drop-shadow(0 0 5px rgba(255, 80, 50, 0.7)); }
+.suit-water .card-center-icon { filter: drop-shadow(0 0 5px rgba(55, 130, 255, 0.7)); }
+.suit-nature .card-center-icon { filter: drop-shadow(0 0 5px rgba(40, 180, 90, 0.7)); }
+.suit-light .card-center-icon { filter: drop-shadow(0 0 5px rgba(255, 200, 50, 0.7)); }
+.suit-arcane .card-center-icon { filter: drop-shadow(0 0 5px rgba(160, 60, 255, 0.7)); }
+.suit-wizard .card-center-icon { filter: drop-shadow(0 0 8px rgba(200, 130, 255, 0.85)); }
+
+/* Card layout — numbers pinned to corners, emoji centered */
+#game-board.active .card-unit,
+#game-board.active .mini-card {
+  position: relative;
+  display: block;
+}
+
+#game-board.active .card-corner-tl,
+#game-board.active .mini-card .card-corner-tl {
+  position: absolute;
+  top: 7px;
+  left: 9px;
+  z-index: 3;
+}
+
+#game-board.active .card-corner-br,
+#game-board.active .mini-card .card-corner-br {
+  position: absolute;
+  bottom: 7px;
+  right: 9px;
+  z-index: 3;
+  transform: none;
+}
+
+#game-board.active .card-value.top,
+#game-board.active .card-corner-tl .card-num,
+#game-board.active .card-corner-tl .card-value,
+#game-board.active .mini-card .card-corner-tl .card-num,
+#game-board.active .mini-card .card-value.top {
+  font-size: 28px !important;
+  font-weight: 800 !important;
+  line-height: 1;
+  display: block;
+}
+
+#game-board.active .card-value.bottom,
+#game-board.active .card-corner-br .card-num,
+#game-board.active .card-corner-br .card-value,
+#game-board.active .mini-card .card-corner-br .card-num,
+#game-board.active .mini-card .card-value.bottom,
+#game-board.active .played-card-slot .card-unit .card-corner-br .card-num,
+#game-board.active .played-card-slot .card-unit .card-corner-br .card-value {
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  line-height: 1;
+  display: block;
+  transform: rotate(180deg) !important;
+}
+
+#game-board.active .card-center-icon,
+#game-board.active .card-suit-emoji,
+#game-board.active .mini-card .card-center-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) !important;
+  font-size: 32px !important;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 2;
+}
+
+#game-board.active .card-unit.suit-wizard .card-value.top,
+#game-board.active .card-unit.suit-jester .card-value.top,
+#game-board.active .card-unit.suit-wizard .card-corner-tl .card-num,
+#game-board.active .card-unit.suit-jester .card-corner-tl .card-num {
+  font-size: 34px !important;
+  font-weight: 900 !important;
+}
+
+/* Mini / table cards — slightly smaller to fit */
+#game-board.active .mini-card .card-corner-tl { top: 5px; left: 6px; }
+#game-board.active .mini-card .card-corner-br { bottom: 5px; right: 6px; }
+#game-board.active .mini-card .card-corner-tl .card-num,
+#game-board.active .mini-card .card-value.top { font-size: 20px !important; }
+#game-board.active .mini-card .card-corner-br .card-num,
+#game-board.active .mini-card .card-value.bottom { font-size: 16px !important; }
+#game-board.active .mini-card .card-center-icon { font-size: 24px !important; }
+
+#game-board.active .played-card-slot .card-unit .card-corner-tl { top: 5px; left: 6px; }
+#game-board.active .played-card-slot .card-unit .card-corner-br { bottom: 5px; right: 6px; }
+#game-board.active .played-card-slot .card-unit .card-corner-tl .card-num,
+#game-board.active .played-card-slot .card-unit .card-value.top { font-size: 22px !important; }
+#game-board.active .played-card-slot .card-unit .card-corner-br .card-num,
+#game-board.active .played-card-slot .card-unit .card-value.bottom { font-size: 18px !important; }
+#game-board.active .played-card-slot .card-unit .card-center-icon { font-size: 26px !important; }
+
+#game-board.active .played-card-slot .card-unit {
+  width: 66px;
+  height: 96px;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+}
+
+#game-board.active .card-unit.playable-card:hover,
+#game-board.active .card-unit.playable:hover,
+#game-board.active .hand-cards-row .card-unit.hand-card-hovered {
+  transform: translateY(-14px) scale(1.06);
+  z-index: 10;
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+#game-board.active .card-unit.not-playable,
+#game-board.active .card-unit.invalid-play {
+  opacity: 0.45;
+  filter: saturate(0.4);
+  cursor: not-allowed;
+}
+
+#game-board.active .card-unit.not-playable:hover,
+#game-board.active .card-unit.invalid-play:hover {
+  transform: none !important;
+}
+
+#game-board.active .card-unit.playable-card.turn-ready,
+#game-board.active .card-unit.playable.turn-ready {
+  box-shadow: 0 0 0 1.5px rgba(255, 200, 80, 0.5), 0 4px 14px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* LEAD badge — subtle dark-fantasy style */
+#game-board.active .lead-wax-seal,
+#game-board.active .lead-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 7px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 200, 80, 0.8);
+  background: rgba(255, 200, 80, 0.12);
+  border: 0.5px solid rgba(255, 200, 80, 0.35);
+  border-radius: 4px;
+  box-shadow: none;
+  transform: none;
+}
+
+#game-board.active .card-unit.suit-fire.hand-card-hovered,
+#game-board.active .card-unit.suit-fire.playable-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 14px var(--glow-fire) !important;
+}
+
+#game-board.active .card-unit.suit-water.hand-card-hovered,
+#game-board.active .card-unit.suit-water.playable-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 14px var(--glow-water) !important;
+}
+
+#game-board.active .card-unit.suit-nature.hand-card-hovered,
+#game-board.active .card-unit.suit-nature.playable-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 14px var(--glow-nature) !important;
+}
+
+#game-board.active .card-unit.suit-light.hand-card-hovered,
+#game-board.active .card-unit.suit-light.playable-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 14px var(--glow-light) !important;
+}
+
+#game-board.active .card-unit.suit-arcane.hand-card-hovered,
+#game-board.active .card-unit.suit-arcane.playable-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 14px var(--glow-arcane) !important;
+}
+
+/* ─── Round summary overlay — high contrast (never dark-blue on dark-blue) ─── */
+#overlay-round-summary .round-summary-modal {
+  background: var(--parchment) !important;
+  color: var(--text-parchment) !important;
+}
+
+#overlay-round-summary .round-summary-modal h2,
+#overlay-round-summary .modal-card h2 {
+  color: #1a1208 !important;
+  font-size: 1.35rem;
+}
+
+#overlay-round-summary .summary-subtitle {
+  color: #3d3020 !important;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 4px 0 14px;
+}
+
+#overlay-round-summary .summary-tabs,
+#overlay-round-summary .lobby-tabs.summary-tabs {
+  margin-bottom: 16px;
+  background: rgba(255, 248, 235, 0.92) !important;
+  border: 1px solid rgba(139, 105, 20, 0.35) !important;
+  border-radius: 10px;
+  padding: 4px;
+}
+
+#overlay-round-summary .summary-tabs .tab-btn,
+#overlay-round-summary .summary-tabs .summary-tab-btn,
+#overlay-round-summary .round-summary-modal .tab-btn {
+  color: #2a2010 !important;
+  background: transparent !important;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  padding: 10px 12px;
+}
+
+#overlay-round-summary .summary-tabs .tab-btn:hover:not(.active),
+#overlay-round-summary .summary-tabs .summary-tab-btn:hover:not(.active) {
+  color: #1a1208 !important;
+  background: rgba(139, 105, 20, 0.14) !important;
+}
+
+#overlay-round-summary .summary-tabs .tab-btn.active,
+#overlay-round-summary .summary-tabs .summary-tab-btn.active,
+#overlay-round-summary .round-summary-modal .tab-btn.active {
+  background: #8b6914 !important;
+  color: #ffffff !important;
+  border: 1px solid #6b5010 !important;
+  box-shadow: 0 2px 6px rgba(60, 45, 10, 0.25);
+}
+
+#overlay-round-summary .summary-table-wrapper {
+  background: rgba(44, 36, 22, 0.08);
+  border: 1px solid rgba(100, 75, 30, 0.35);
+}
+
+#overlay-round-summary .summary-table th {
+  background: rgba(120, 90, 40, 0.18);
+  color: #2a2010;
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+
+#overlay-round-summary .summary-table td {
+  color: #1a1208;
+  font-weight: 500;
+}
+
+#overlay-round-summary #btn-copy-summary {
+  color: #1a1208;
+  border-color: rgba(100, 75, 30, 0.45);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+#overlay-round-summary #summary-tab-chart-content {
+  background: rgba(44, 36, 22, 0.06);
+  border: 1px solid rgba(100, 75, 30, 0.3);
+  border-radius: 10px;
+  padding: 12px 8px 8px;
+  min-height: 280px;
+}
+
+#overlay-round-summary .modal-host-note,
+#overlay-round-summary .modal-waiting-note {
+  color: #4a3d28;
+}
+
+#overlay-round-summary .summary-table td.positive,
+#overlay-round-summary .positive {
+  color: #047857;
+  font-weight: 700;
+}
+
+#overlay-round-summary .summary-table td.negative,
+#overlay-round-summary .negative {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+#overlay-round-summary #btn-next-round {
+  background: #166534;
+  border: 0.5px solid #14532d;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 8px;
+  width: 100%;
+  margin-top: 12px;
+}
+
+#overlay-round-summary #btn-next-round:hover {
+  background: #15803d;
+  border-color: #166534;
+  color: #ffffff;
+}
