@@ -130,10 +130,14 @@ def root() -> dict[str, Any]:
     return health()
 
 
+SERVICE_VERSION = "2026-06-18-tricks-played"
+
+
 @app.get("/health")
 def health() -> dict[str, Any]:
     return {
         "ok": True,
+        "version": SERVICE_VERSION,
         "models": {
             "v6": _v6_model is not None,
             "v7": _v7_model is not None,
