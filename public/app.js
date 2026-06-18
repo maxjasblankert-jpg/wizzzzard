@@ -845,11 +845,11 @@ function buildMiniCardHTML(card, extraClass = '') {
   const title = `${card.value} of ${meta.name}`;
   const themeClass = window.CardArt?.getSuitThemeClass?.(card) || `suit-${suit}`;
   const mysticClass = window.CardArt?.getMysticCardClasses?.(card) || `mystic-card grimoire-card game-card ${themeClass}`;
-  const trumpTree = extraClass.includes('is-trump') || extraClass.includes('trump');
-  const trumpJobClass = trumpTree ? ' trump-card-display trump-job-card' : '';
+  const isTrumpDisplay = extraClass.includes('is-trump') || extraClass.includes('trump');
+  const trumpDisplayClass = isTrumpDisplay ? ' trump-card-display' : '';
   return `
-    <div class="mini-card ${themeClass} suit-${suit} card-val-${card.value} ${mysticClass}${trumpJobClass} ${extraClass}" title="${title}">
-      ${buildCardFaceHTML(card, { showLabel: false, trumpTree: !!trumpTree })}
+    <div class="mini-card ${themeClass} suit-${suit} card-val-${card.value} ${mysticClass}${trumpDisplayClass} ${extraClass}" title="${title}">
+      ${buildCardFaceHTML(card, { showLabel: false })}
     </div>
   `;
 }
@@ -1047,6 +1047,13 @@ function renderWaitingLobby() {
 
 // Player stats and scores list (Sidebar)
 function renderSidebarPanel() {
+  const board = document.getElementById('game-board');
+  const playerCount = gameState.players.length;
+  if (board) {
+    board.dataset.players = String(Math.max(2, Math.min(6, playerCount)));
+    board.style.setProperty('--sidebar-players', String(playerCount));
+  }
+
   const container = document.getElementById('players-stats-list');
   container.innerHTML = '';
 
@@ -1064,6 +1071,7 @@ function renderSidebarPanel() {
 
     const bidText = p.currentBid === null ? '—' : p.currentBid;
     const bidPending = p.currentBid === null;
+    const totalClass = p.score >= 0 ? 'score-positive' : 'score-negative';
     const statusLine = getPlayerStatusLine(p, idx);
     const statusClass = isActive ? 'is-thinking' : '';
 
@@ -1084,37 +1092,67 @@ function renderSidebarPanel() {
           <div class="player-stat-value">${p.tricksWon}</div>
           <div class="player-stat-label">Won</div>
         </div>
+        <div class="player-stats-divider"></div>
+        <div class="player-stat">
+          <div class="player-stat-value ${totalClass}">${p.score}</div>
+          <div class="player-stat-label">Total</div>
+        </div>
       </div>
     `;
 
     container.appendChild(row);
   });
 
-  // Cumulative Scoreboard rows
-  const sbBody = document.getElementById('scoreboard-body');
-  sbBody.innerHTML = '';
-
-  gameState.players.forEach((p, idx) => {
-    const bidText = p.currentBid === null ? '—' : p.currentBid;
-    const totalClass = p.score >= 0 ? 'score-positive' : 'score-negative';
-    const emoji = getPlayerEmoji(p);
-    const nameClass = p.id === myPlayerId ? 'scoreboard-player is-you' : 'scoreboard-player';
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="${nameClass}"><span class="scoreboard-player-name">${emoji ? emoji + ' ' : ''}${p.name}</span></td>
-      <td class="scoreboard-num">${bidText}</td>
-      <td class="scoreboard-num">${p.tricksWon}</td>
-      <td class="col-total scoreboard-num ${totalClass}">${p.score}</td>
-    `;
-    sbBody.appendChild(tr);
-  });
-
   const hostEndSec = document.getElementById('host-end-game-section');
   if (hostEndSec) {
-    const isHost = gameState.players[0]?.id === myPlayerId;
+    const isHost = gameState.hostId === myPlayerId
+      || (!gameState.hostId && gameState.players[0]?.id === myPlayerId);
     const inProgress = ['bidding', 'play', 'round_end'].includes(gameState.status);
     hostEndSec.classList.toggle('hidden', !(isHost && inProgress));
   }
+
+  scheduleSidebarFit();
+}
+
+let sidebarFitObserver = null;
+
+function ensureSidebarFitObserver() {
+  if (sidebarFitObserver) return;
+  const scalable = document.querySelector('#game-board.active .sidebar-scalable');
+  const sidebar = document.querySelector('#game-board.active .sidebar-panel');
+  const observeTarget = scalable || sidebar;
+  if (!observeTarget || typeof ResizeObserver === 'undefined') return;
+  sidebarFitObserver = new ResizeObserver(() => scheduleSidebarFit());
+  sidebarFitObserver.observe(observeTarget);
+  if (sidebar && sidebar !== observeTarget) sidebarFitObserver.observe(sidebar);
+}
+
+function scheduleSidebarFit() {
+  requestAnimationFrame(() => fitSidebarPanel());
+}
+
+/** Shrink sidebar uniformly so players + scoreboard fit without scrolling. */
+function fitSidebarPanel() {
+  const board = document.getElementById('game-board');
+  const sidebar = board?.querySelector('.sidebar-panel');
+  if (!board?.classList.contains('active') || !sidebar) return;
+
+  ensureSidebarFitObserver();
+  sidebar.style.setProperty('--sidebar-fit-scale', '1');
+
+  requestAnimationFrame(() => {
+    const scalable = sidebar.querySelector('.sidebar-scalable');
+    const hostEndSec = sidebar.querySelector('#host-end-game-section');
+    const hostEndVisible = hostEndSec && !hostEndSec.classList.contains('hidden');
+    const hostEndHeight = hostEndVisible ? hostEndSec.offsetHeight : 0;
+    const available = Math.max(sidebar.clientHeight - hostEndHeight - 4, 1);
+    const natural = scalable ? scalable.scrollHeight : sidebar.scrollHeight;
+    let scale = 1;
+    if (available > 0 && natural > available) {
+      scale = Math.max(0.58, available / natural);
+    }
+    sidebar.style.setProperty('--sidebar-fit-scale', scale.toFixed(3));
+  });
 }
 
 // Alert banner message
@@ -1297,13 +1335,15 @@ function polarTableStyle(relativePos, nPlayers, radiusPercent) {
 }
 
 function getSeatStyle(relativePos, nPlayers) {
-  return polarTableStyle(relativePos, nPlayers, 58);
+  const radius = nPlayers <= 3 ? 64 : 58;
+  return polarTableStyle(relativePos, nPlayers, radius);
 }
 
 function getCardStyle(relativePos, nPlayers) {
   // Radius tuned so cards sit on green felt, clear of trump, and fully inside the circle
   let radius = 33;
-  if (nPlayers >= 6) radius = 29;
+  if (nPlayers <= 3) radius = 38;
+  else if (nPlayers >= 6) radius = 29;
   else if (nPlayers >= 5) radius = 30;
   else if (nPlayers >= 4) radius = 31;
   if (relativePos === 0) radius -= 3;
@@ -1519,9 +1559,12 @@ document.addEventListener('click', () => WizardAudio.primeAudio(), { once: true 
 
 function renderTrumpCards() {
   const trumpCard = gameState.trumpCard || gameState.jobCard;
-  const html = trumpCard
-    ? buildMiniCardHTML(trumpCard, jobCardHighlightClass(trumpCard))
-    : '<div class="mini-card empty">?</div>';
+  const isNoTrumpFlip = trumpCard && (trumpCard.value === 1 || trumpCard.value === 15);
+  const html = !trumpCard
+    ? '<div class="mini-card empty">?</div>'
+    : isNoTrumpFlip
+      ? '<div class="mini-card empty no-trump-display">No trump</div>'
+      : buildMiniCardHTML(trumpCard, jobCardHighlightClass(trumpCard));
 
   ['job-card-container', 'bid-trump-container'].forEach(id => {
     const el = document.getElementById(id);
@@ -1735,21 +1778,50 @@ function bestHandFit(targetSpan, count, minW, maxW, minVisible, minOverlap) {
   return { cardW, overlap: Math.max(0, overlap) };
 }
 
+/** Hand cards slightly larger than table cards — capped to fit the footer. */
+const HAND_CARD_SCALE = 1.35;
+
+function scaleHandMetric(value) {
+  return Math.round(value * HAND_CARD_SCALE);
+}
+
+function handMaxWidth(count, availW, footerH, aspect, profileMaxW) {
+  const maxByHeight = Math.floor(Math.max(72, (footerH || 110) - 8) / aspect);
+  const maxByWidth = Math.floor(availW / Math.max(2.8, count * 0.62));
+  return Math.min(profileMaxW, maxByHeight, maxByWidth);
+}
+
 /** Layout tiers: minVisible caps overlap; minOverlap keeps a light fan when space allows. */
 function handLayoutProfile(count) {
   if (count > 11) {
-    return { minVisible: 30, minOverlap: 5, maxW: 72, minW: 44, rotStep: 0.85 };
+    return {
+      minVisible: scaleHandMetric(30),
+      minOverlap: scaleHandMetric(5),
+      maxW: scaleHandMetric(72),
+      minW: scaleHandMetric(44),
+      rotStep: 0.85
+    };
   }
   if (count > 7) {
-    return { minVisible: 28, minOverlap: 4, maxW: 72, minW: 42, rotStep: 1.2 };
+    return {
+      minVisible: scaleHandMetric(28),
+      minOverlap: scaleHandMetric(4),
+      maxW: scaleHandMetric(72),
+      minW: scaleHandMetric(42),
+      rotStep: 1.2
+    };
   }
   return {
-    minVisible: 24,
-    minOverlap: 3,
-    maxW: 72,
-    minW: 40,
+    minVisible: scaleHandMetric(24),
+    minOverlap: scaleHandMetric(3),
+    maxW: scaleHandMetric(72),
+    minW: scaleHandMetric(40),
     rotStep: count > 5 ? 1.5 : 2
   };
+}
+
+function handFooterBudget() {
+  return Math.floor(Math.min(window.innerHeight * 0.195, 168));
 }
 
 function sizePlayerHandRow() {
@@ -1765,23 +1837,31 @@ function sizePlayerHandRow() {
   const panel = container.closest('.my-hand-panel');
   const footer = panel?.closest('.game-hand-footer');
   const availW = Math.max(40, footer?.clientWidth ?? panel?.clientWidth ?? container.clientWidth);
+  const footerCap = handFooterBudget();
+  const footerH = Math.min(footer?.clientHeight ?? panel?.clientHeight ?? 110, footerCap);
   const aspect = 152 / 108;
   const profile = handLayoutProfile(count);
-  const { minVisible, minOverlap, maxW, minW, rotStep } = profile;
+  const { minVisible, minOverlap, maxW: profileMaxW, minW, rotStep } = profile;
+  const maxW = handMaxWidth(count, availW, footerH, aspect, profileMaxW);
 
   let rotPad = rotationPadding(maxW, count, rotStep, aspect);
   let targetSpan = Math.max(40, availW - rotPad * 2);
   const needsScroll = count > 1 && handRowSpan(minW, Math.max(minOverlap, minW - minVisible), count) > targetSpan;
 
   container.classList.toggle('hand-scrollable', needsScroll);
-  container.style.width = '';
-  container.style.margin = '';
+  container.style.width = needsScroll ? '' : '100%';
+  container.style.margin = '0';
+  container.style.transform = '';
 
   let cardW;
   let overlap;
 
   if (needsScroll) {
-    cardW = Math.floor(Math.min(88, Math.max(60, Math.min(84, availW * 0.14))));
+    const scrollMaxW = handMaxWidth(count, availW, footerH, aspect, scaleHandMetric(88));
+    cardW = Math.floor(Math.min(
+      scrollMaxW,
+      Math.max(scaleHandMetric(52), Math.min(scaleHandMetric(76), availW * 0.12))
+    ));
     overlap = Math.max(minOverlap, cardW - minVisible);
   } else {
     ({ cardW, overlap } = bestHandFit(targetSpan, count, minW, maxW, minVisible, minOverlap));
@@ -1792,16 +1872,17 @@ function sizePlayerHandRow() {
       targetSpan = Math.max(40, availW - fittedRotPad * 2);
       ({ cardW, overlap } = bestHandFit(targetSpan, count, minW, maxW, minVisible, minOverlap));
     }
+  }
 
-    const span = handRowSpan(cardW, overlap, count);
-    container.style.width = `${span}px`;
-    container.style.margin = '0 auto';
+  if (count <= 3) {
+    const overlapCap = cardW * (count <= 2 ? 0.2 : 0.3);
+    overlap = Math.min(overlap, Math.max(minOverlap, overlapCap));
   }
 
   const sidePad = Math.ceil(overlap / 2 + rotPad);
   const cardH = Math.floor(cardW * aspect);
-  board.style.setProperty('--card-width', `${cardW}px`);
-  board.style.setProperty('--card-height', `${cardH}px`);
+  board.style.setProperty('--hand-card-width', `${cardW}px`);
+  board.style.setProperty('--hand-card-height', `${cardH}px`);
   board.style.setProperty('--hand-overlap', `${(overlap / 2).toFixed(1)}px`);
   board.style.setProperty('--hand-side-pad', `${sidePad}px`);
   applyHandCardTransforms(container, count, rotStep);
@@ -1809,7 +1890,10 @@ function sizePlayerHandRow() {
 
 if (!window.__wizHandResizeBound) {
   window.__wizHandResizeBound = true;
-  window.addEventListener('resize', schedulePlayerHandLayout);
+  window.addEventListener('resize', () => {
+    schedulePlayerHandLayout();
+    scheduleSidebarFit();
+  });
 }
 
 // Score sheet overlay for copy transposition

@@ -185,6 +185,7 @@ function broadcastToRoom(room) {
         currentTrick: room.currentTrick,
         players: sanitizedPlayers,
         hostVoiceLog: room.hostVoiceLog,
+        hostId: room.hostId || room.players[0]?.id,
         paused: room.players.some(pl => !pl.active), // Paused if any player disconnected
         privateHand: p.hand,
         myPlayerId: p.id
@@ -232,6 +233,7 @@ wss.on('connection', (ws) => {
             mode,
             playerCount: parseInt(playerCount),
             hookRule: !!hookRule,
+            hostId: newPlayerId,
             players: [{
               id: newPlayerId,
               name: hostName,

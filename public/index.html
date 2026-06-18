@@ -7,10 +7,12 @@
   <!-- Google Fonts: Cinzel + Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:wght@600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=IM+Fell+English&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="mystic-cyber.css">
   <link rel="stylesheet" href="game-theme.css">
+  <link rel="stylesheet" href="steampunk-arcane.css">
+  <link rel="stylesheet" href="lobby-arcane.css">
   <!-- Chart.js for premium visualizations -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -44,7 +46,7 @@
         </div>
 
         <div class="form-group">
-          <label>Profile Emoji</label>
+          <label>Profile Emblem</label>
           <div id="create-emoji-picker" class="emoji-picker"></div>
           <input type="hidden" id="input-create-emoji" value="🧙">
         </div>
@@ -112,7 +114,7 @@
         </div>
 
         <div class="form-group">
-          <label>Profile Emoji</label>
+          <label>Profile Emblem</label>
           <div id="join-emoji-picker" class="emoji-picker"></div>
           <input type="hidden" id="input-join-emoji" value="🧝">
         </div>
@@ -246,6 +248,7 @@
 
       <!-- SIDEBAR: full height left column -->
       <aside class="sidebar-panel glass-panel">
+          <div class="sidebar-scalable">
           <div class="game-meta-compact">
             <span id="txt-round-number" class="game-meta-round">Round 1 of 25</span>
             <span class="game-meta-sep" aria-hidden="true">·</span>
@@ -257,30 +260,9 @@
           <div id="players-stats-list" class="players-stats-container">
             <!-- Dynamically populated players listing with current bids and tricks -->
           </div>
-          
-          <div class="sidebar-divider"></div>
-
-          <div class="scoreboard-section">
-          <h3 class="panel-title">Scoreboard</h3>
-          <div class="scoreboard-scroll">
-            <table class="scoreboard-table">
-              <thead>
-                <tr>
-                  <th>Player</th>
-                  <th>Bid</th>
-                  <th>Won</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody id="scoreboard-body">
-                <!-- Dynamically populated score rows -->
-              </tbody>
-            </table>
-          </div>
           </div>
 
           <div id="host-end-game-section" class="host-end-game-section hidden">
-            <div class="sidebar-divider"></div>
             <button id="btn-end-game" type="button" class="btn btn-danger btn-full" onclick="endGameEarly()">End Game Early</button>
             <p class="host-end-game-note">Host only — ends the game now and shows final scores.</p>
           </div>

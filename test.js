@@ -176,6 +176,14 @@ try {
   assert.strictEqual(blueTwo.value, 2, 'Standard id 1 is rank 2');
   assert.strictEqual(blueFourteen.value, 14, 'Standard id 13 is rank 14');
 
+  const wizardFlip = SR.resolveTrumpFromFlip(29, [blueTwo, blueFourteen]);
+  assert.strictEqual(wizardFlip.trumpSuitIndex, -1, 'Wizard flip => no trump');
+  assert.strictEqual(wizardFlip.trumpSuit, null, 'Wizard flip has no trump suit');
+  assert.strictEqual(wizardFlip.trumpCard.value, 15, 'Flipped wizard card is still recorded');
+
+  const jesterFlip = SR.resolveTrumpFromFlip(0, []);
+  assert.strictEqual(jesterFlip.trumpSuitIndex, -1, 'Jester flip => no trump');
+
   const blueCards = SR.createStandardDeck().filter(c => c.suit === 'blue');
   assert.strictEqual(blueCards.length, 15, 'One card per rank in blue suit');
   assert.strictEqual(blueCards.filter(c => c.value === 1).length, 1, 'Only one Jester (1) per suit');

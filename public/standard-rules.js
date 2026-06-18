@@ -48,7 +48,7 @@
     const icon = value === 1
       ? '🃏'
       : value === 15
-        ? '⭐'
+        ? '🧙'
         : ((global.CardArt && global.CardArt.getRankSymbol(suit, value)) || '◆');
     return { id, suit, value, cardKind, key: `std-${id}`, icon };
   }
@@ -79,12 +79,7 @@
     }
     const trumpCard = cardObjectFromId(trumpCardId);
     if (isWizard(trumpCardId)) {
-      const idx = dealerChooseTrump(dealerHand);
-      return {
-        trumpSuitIndex: idx,
-        trumpCard,
-        trumpSuit: suitNameFromIndex(idx)
-      };
+      return { trumpSuitIndex: -1, trumpCard, trumpSuit: null };
     }
     if (isJester(trumpCardId)) {
       return { trumpSuitIndex: -1, trumpCard, trumpSuit: null };
@@ -250,8 +245,7 @@
       return 'Final round — no trump card flipped.';
     }
     if (isWizard(trumpCard.id)) {
-      const name = suitNameFromIndex(trumpSuitIndex) || 'unknown';
-      return `Wizard flipped for trump — dealer chose ${name} as trump suit.`;
+      return 'Wizard flipped — no trump this round.';
     }
     if (isJester(trumpCard.id)) {
       return 'Jester flipped — no trump this round.';

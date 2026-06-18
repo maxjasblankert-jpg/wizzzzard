@@ -1,0 +1,536 @@
+/* ═══ Wizzzzard — Dark Fantasy Lobby Theme ═══ */
+
+/* Scope: all pre-game / lobby screens (not active game board) */
+#app-container:not(:has(#game-board.active)) {
+  --lobby-bg: #0d1117;
+  --lobby-panel: rgba(20, 15, 8, 0.85);
+  --lobby-border: rgba(212, 168, 75, 0.25);
+  --lobby-gold: #d4a84b;
+  --lobby-gold-muted: #8a7040;
+  --lobby-input-bg: #0a0804;
+  --lobby-text: #e8dcc8;
+  --lobby-text-muted: #a89878;
+  --lobby-font-display: 'Cinzel', serif;
+  --lobby-font-body: 'Crimson Text', Georgia, serif;
+}
+
+/* ─── Background: near-black + candlelight glow ─── */
+body:has(#app-container:not(:has(#game-board.active))) {
+  background-color: #0d1117;
+  background-image: radial-gradient(
+    ellipse 90% 50% at 50% 0%,
+    rgba(212, 168, 75, 0.09) 0%,
+    rgba(212, 168, 75, 0.03) 35%,
+    transparent 70%
+  );
+  color: var(--lobby-text);
+  font-family: var(--lobby-font-body);
+}
+
+#app-container:not(:has(#game-board.active)) {
+  background: transparent;
+}
+
+/* ─── Page header ─── */
+#app-container:not(:has(#game-board.active)) .page-header .page-title {
+  font-family: var(--lobby-font-display);
+  font-variant: small-caps;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--lobby-gold);
+  text-shadow: 0 0 24px rgba(212, 168, 75, 0.15);
+}
+
+#app-container:not(:has(#game-board.active)) .page-header .page-subtitle {
+  font-family: var(--lobby-font-body);
+  font-size: 12px;
+  color: var(--lobby-text-muted);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
+/* Gold gradient divider (replaces ✦ separator) */
+#app-container:not(:has(#game-board.active)) .page-header .page-divider {
+  gap: 0;
+  margin: 12px 0 10px;
+}
+
+#app-container:not(:has(#game-board.active)) .page-header .page-divider .divider-star {
+  display: none;
+}
+
+#app-container:not(:has(#game-board.active)) .page-header .page-divider::before,
+#app-container:not(:has(#game-board.active)) .page-header .page-divider::after {
+  content: '';
+  display: block;
+  flex: 1;
+  max-width: 160px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #d4a84b, transparent);
+  font-size: 0;
+  letter-spacing: 0;
+}
+
+#app-container:not(:has(#game-board.active)) .lobby-header::after {
+  content: '';
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  height: 1px;
+  margin: 12px auto 8px;
+  background: linear-gradient(90deg, transparent, #d4a84b, transparent);
+}
+
+/* ─── Main tab bar ─── */
+#app-container:not(:has(#game-board.active)) .main-tab-bar {
+  background: rgba(10, 8, 4, 0.6);
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+  padding: 3px;
+}
+
+#app-container:not(:has(#game-board.active)) .main-tab-bar .tab-btn {
+  font-family: var(--lobby-font-display);
+  font-variant: small-caps;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lobby-gold-muted);
+  border-radius: 3px;
+}
+
+#app-container:not(:has(#game-board.active)) .main-tab-bar .tab-btn:hover {
+  color: var(--lobby-gold);
+  background: rgba(212, 168, 75, 0.08);
+}
+
+#app-container:not(:has(#game-board.active)) .main-tab-bar .tab-btn.active {
+  background: linear-gradient(180deg, #c89a35 0%, #9b7020 100%);
+  color: #0a0804;
+  box-shadow: 0 0 12px rgba(200, 154, 53, 0.25);
+}
+
+/* ─── Dark fantasy panels (replace parchment cards) ─── */
+#app-container:not(:has(#game-board.active)) #lobby-screen.parchment-card,
+#app-container:not(:has(#game-board.active)) #waiting-lobby.parchment-card,
+#app-container:not(:has(#game-board.active)) #scores-panel.parchment-card {
+  background: var(--lobby-panel);
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+  color: var(--lobby-text);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(212, 168, 75, 0.06);
+  padding: 28px 26px;
+  backdrop-filter: blur(6px);
+}
+
+#app-container:not(:has(#game-board.active)) #lobby-screen.parchment-card::before,
+#app-container:not(:has(#game-board.active)) #lobby-screen.parchment-card::after,
+#app-container:not(:has(#game-board.active)) #waiting-lobby.parchment-card::before,
+#app-container:not(:has(#game-board.active)) #waiting-lobby.parchment-card::after,
+#app-container:not(:has(#game-board.active)) #scores-panel.parchment-card::before,
+#app-container:not(:has(#game-board.active)) #scores-panel.parchment-card::after {
+  display: none;
+}
+
+/* ─── Typography: labels & body ─── */
+#app-container:not(:has(#game-board.active)) #lobby-screen label,
+#app-container:not(:has(#game-board.active)) #waiting-lobby label,
+#app-container:not(:has(#game-board.active)) #scores-panel label {
+  font-family: var(--lobby-font-display);
+  font-variant: small-caps;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--lobby-gold-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+#app-container:not(:has(#game-board.active)) #lobby-screen,
+#app-container:not(:has(#game-board.active)) #waiting-lobby,
+#app-container:not(:has(#game-board.active)) #scores-panel {
+  font-family: var(--lobby-font-body);
+}
+
+#app-container:not(:has(#game-board.active)) .warning-text,
+#app-container:not(:has(#game-board.active)) .scores-help-text,
+#app-container:not(:has(#game-board.active)) .empty-state-text,
+#app-container:not(:has(#game-board.active)) .host-note,
+#app-container:not(:has(#game-board.active)) .waiting-note,
+#app-container:not(:has(#game-board.active)) .checkbox-desc {
+  font-family: var(--lobby-font-body);
+  font-size: 0.88rem;
+  color: var(--lobby-text-muted);
+  line-height: 1.5;
+}
+
+#app-container:not(:has(#game-board.active)) .warning-text {
+  background: rgba(212, 168, 75, 0.06);
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+  color: #c4a86a;
+}
+
+#app-container:not(:has(#game-board.active)) .warning-text strong {
+  color: var(--lobby-gold);
+  font-weight: 600;
+}
+
+/* ─── Inputs & selects ─── */
+#app-container:not(:has(#game-board.active)) #lobby-screen input[type="text"],
+#app-container:not(:has(#game-board.active)) #waiting-lobby input[type="text"],
+#app-container:not(:has(#game-board.active)) #scores-panel input[type="text"] {
+  background-color: var(--lobby-input-bg);
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+  color: #d4b87a;
+  font-family: var(--lobby-font-body);
+  font-size: 15px;
+  padding: 10px 12px;
+}
+
+#app-container:not(:has(#game-board.active)) #lobby-screen select,
+#app-container:not(:has(#game-board.active)) #waiting-lobby select,
+#app-container:not(:has(#game-board.active)) #scores-panel select {
+  appearance: none;
+  background-color: var(--lobby-input-bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23d4a84b' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 8px;
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+  color: #d4b87a;
+  font-family: var(--lobby-font-body);
+  font-size: 15px;
+  padding: 10px 32px 10px 12px;
+  cursor: pointer;
+}
+
+#app-container:not(:has(#game-board.active)) #lobby-screen input[type="text"]::placeholder,
+#app-container:not(:has(#game-board.active)) #waiting-lobby input[type="text"]::placeholder,
+#app-container:not(:has(#game-board.active)) #scores-panel input[type="text"]::placeholder {
+  color: rgba(138, 112, 64, 0.55);
+  font-family: var(--lobby-font-body);
+}
+
+#app-container:not(:has(#game-board.active)) #lobby-screen .input-room-code,
+#app-container:not(:has(#game-board.active)) #waiting-lobby .input-room-code,
+#app-container:not(:has(#game-board.active)) #scores-panel .input-room-code {
+  font-family: var(--lobby-font-display);
+  font-variant: small-caps;
+  font-size: 18px;
+  letter-spacing: 0.2em;
+  color: var(--lobby-gold);
+}
+
+#app-container:not(:has(#game-board.active)) #lobby-screen input[type="text"]:focus,
+#app-container:not(:has(#game-board.active)) #waiting-lobby input[type="text"]:focus,
+#app-container:not(:has(#game-board.active)) #scores-panel input[type="text"]:focus {
+  border-color: rgba(212, 168, 75, 0.55);
+  background-color: #0d0a06;
+  box-shadow: 0 0 0 2px rgba(212, 168, 75, 0.12);
+  outline: none;
+}
+
+#app-container:not(:has(#game-board.active)) #lobby-screen select:focus,
+#app-container:not(:has(#game-board.active)) #waiting-lobby select:focus,
+#app-container:not(:has(#game-board.active)) #scores-panel select:focus {
+  border-color: rgba(212, 168, 75, 0.55);
+  background-color: #0d0a06;
+  box-shadow: 0 0 0 2px rgba(212, 168, 75, 0.12);
+  outline: none;
+}
+
+#app-container:not(:has(#game-board.active)) #lobby-screen input[type="range"],
+#app-container:not(:has(#game-board.active)) #scores-panel input[type="range"] {
+  accent-color: var(--lobby-gold);
+  background: rgba(212, 168, 75, 0.12);
+}
+
+/* ─── Hook rule toggle ─── */
+#app-container:not(:has(#game-board.active)) .checkbox-group {
+  background: rgba(10, 8, 4, 0.65);
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+  padding: 14px 16px;
+}
+
+#app-container:not(:has(#game-board.active)) .checkbox-title {
+  font-family: var(--lobby-font-display);
+  font-variant: small-caps;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--lobby-text);
+}
+
+#app-container:not(:has(#game-board.active)) .switch-slider {
+  background-color: rgba(10, 8, 4, 0.8);
+  border: 1px solid var(--lobby-border);
+  border-radius: 34px;
+}
+
+#app-container:not(:has(#game-board.active)) .switch-slider::before {
+  background: linear-gradient(180deg, #d4a84b 0%, #9b7020 100%);
+  box-shadow: 0 0 8px rgba(212, 168, 75, 0.35);
+}
+
+#app-container:not(:has(#game-board.active)) input:checked + .switch-slider {
+  background-color: rgba(212, 168, 75, 0.12);
+  border-color: rgba(212, 168, 75, 0.45);
+}
+
+/* ─── Primary buttons (gold gradient) ─── */
+#app-container:not(:has(#game-board.active)) #lobby-screen .btn-primary,
+#app-container:not(:has(#game-board.active)) #waiting-lobby .btn-primary,
+#app-container:not(:has(#game-board.active)) #scores-panel .btn-primary,
+#app-container:not(:has(#game-board.active)) #lobby-screen .btn-action,
+#app-container:not(:has(#game-board.active)) #waiting-lobby .btn-action,
+#app-container:not(:has(#game-board.active)) #scores-panel .btn-action {
+  background: linear-gradient(180deg, #c89a35 0%, #9b7020 100%);
+  border: 1px solid rgba(212, 168, 75, 0.4);
+  border-radius: 4px;
+  color: #0a0804;
+  font-family: var(--lobby-font-display);
+  font-variant: small-caps;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 12px rgba(155, 112, 32, 0.3);
+}
+
+#app-container:not(:has(#game-board.active)) #lobby-screen .btn-primary:hover,
+#app-container:not(:has(#game-board.active)) #waiting-lobby .btn-primary:hover,
+#app-container:not(:has(#game-board.active)) #scores-panel .btn-primary:hover,
+#app-container:not(:has(#game-board.active)) #lobby-screen .btn-action:hover,
+#app-container:not(:has(#game-board.active)) #waiting-lobby .btn-action:hover,
+#app-container:not(:has(#game-board.active)) #scores-panel .btn-action:hover {
+  background: linear-gradient(180deg, #d4a84b 0%, #a88028 100%);
+  border-color: rgba(212, 168, 75, 0.6);
+  color: #0a0804;
+  box-shadow: 0 4px 16px rgba(200, 154, 53, 0.35);
+}
+
+#app-container:not(:has(#game-board.active)) #lobby-screen .btn-primary:disabled,
+#app-container:not(:has(#game-board.active)) #waiting-lobby .btn-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ─── Ghost buttons (Examine Deck / Rules) ─── */
+#app-container:not(:has(#game-board.active)) #lobby-screen .btn-secondary,
+#app-container:not(:has(#game-board.active)) #waiting-lobby .btn-secondary,
+#app-container:not(:has(#game-board.active)) #scores-panel .btn-secondary,
+#app-container:not(:has(#game-board.active)) #lobby-screen .lobby-examine-actions .btn,
+#app-container:not(:has(#game-board.active)) #waiting-lobby .btn-examine-sm {
+  background: transparent;
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+  color: var(--lobby-gold-muted);
+  font-family: var(--lobby-font-display);
+  font-variant: small-caps;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+#app-container:not(:has(#game-board.active)) #lobby-screen .btn-secondary:hover,
+#app-container:not(:has(#game-board.active)) #waiting-lobby .btn-secondary:hover,
+#app-container:not(:has(#game-board.active)) #scores-panel .btn-secondary:hover,
+#app-container:not(:has(#game-board.active)) #lobby-screen .lobby-examine-actions .btn:hover,
+#app-container:not(:has(#game-board.active)) #waiting-lobby .btn-examine-sm:hover {
+  background: rgba(212, 168, 75, 0.06);
+  border-color: rgba(212, 168, 75, 0.45);
+  color: var(--lobby-gold);
+}
+
+/* ─── Profile Emblem picker ─── */
+#app-container:not(:has(#game-board.active)) .emoji-picker {
+  gap: 8px;
+}
+
+#app-container:not(:has(#game-board.active)) .emoji-option {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  border: 1px solid var(--lobby-border);
+  background: var(--lobby-input-bg);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#app-container:not(:has(#game-board.active)) .emoji-option:hover {
+  border-color: rgba(212, 168, 75, 0.45);
+  background: rgba(10, 8, 4, 0.9);
+}
+
+#app-container:not(:has(#game-board.active)) .emoji-option.selected {
+  border-color: var(--lobby-gold);
+  background: rgba(212, 168, 75, 0.08);
+  box-shadow:
+    0 0 0 1px rgba(212, 168, 75, 0.35),
+    0 0 14px rgba(212, 168, 75, 0.3);
+}
+
+/* ─── Waiting lobby: room code & badges ─── */
+#app-container:not(:has(#game-board.active)) .room-code-chip {
+  background: var(--lobby-input-bg);
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+}
+
+#app-container:not(:has(#game-board.active)) .room-code-chip-label {
+  font-family: var(--lobby-font-display);
+  font-variant: small-caps;
+  color: var(--lobby-gold-muted);
+  letter-spacing: 0.16em;
+}
+
+#app-container:not(:has(#game-board.active)) .room-code-chip-value {
+  font-family: var(--lobby-font-display);
+  color: var(--lobby-gold);
+  letter-spacing: 0.2em;
+}
+
+#app-container:not(:has(#game-board.active)) .btn-copy-chip {
+  background: transparent !important;
+  border: 1px solid var(--lobby-border) !important;
+  border-radius: 4px !important;
+  color: var(--lobby-gold-muted) !important;
+}
+
+#app-container:not(:has(#game-board.active)) .btn-copy-chip:hover {
+  border-color: rgba(212, 168, 75, 0.5) !important;
+  color: var(--lobby-gold) !important;
+}
+
+#app-container:not(:has(#game-board.active)) .badge {
+  background: rgba(212, 168, 75, 0.08);
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+  color: var(--lobby-gold-muted);
+  font-family: var(--lobby-font-display);
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+}
+
+#app-container:not(:has(#game-board.active)) .badge-gold {
+  background: rgba(212, 168, 75, 0.1);
+  border-color: rgba(212, 168, 75, 0.4);
+  color: var(--lobby-gold);
+  border-radius: 4px;
+}
+
+/* ─── Waiting lobby: connected player pills ─── */
+#app-container:not(:has(#game-board.active)) .players-list-section h3 {
+  font-family: var(--lobby-font-display);
+  font-variant: small-caps;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--lobby-gold-muted);
+}
+
+#app-container:not(:has(#game-board.active)) .player-pill {
+  background: transparent;
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+  padding: 6px 12px 6px 6px;
+  color: var(--lobby-gold);
+  font-family: var(--lobby-font-body);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#app-container:not(:has(#game-board.active)) .player-pill:hover {
+  border-color: rgba(212, 168, 75, 0.45);
+  background: rgba(212, 168, 75, 0.04);
+}
+
+#app-container:not(:has(#game-board.active)) .player-pill-name {
+  font-family: var(--lobby-font-body);
+  color: var(--lobby-gold);
+}
+
+#app-container:not(:has(#game-board.active)) #waiting-lobby .player-avatar-emoji,
+#app-container:not(:has(#game-board.active)) #waiting-lobby .player-avatar {
+  background: var(--lobby-input-bg);
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+  color: var(--lobby-gold);
+}
+
+#app-container:not(:has(#game-board.active)) .player-lobby-card {
+  background: transparent;
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+}
+
+#app-container:not(:has(#game-board.active)) .player-lobby-card:hover {
+  border-color: rgba(212, 168, 75, 0.45);
+}
+
+#app-container:not(:has(#game-board.active)) .player-lobby-card.me {
+  border-color: var(--lobby-gold);
+  background: transparent;
+  box-shadow: 0 0 12px rgba(212, 168, 75, 0.12);
+}
+
+#app-container:not(:has(#game-board.active)) .player-lobby-card .player-name {
+  font-family: var(--lobby-font-body);
+  color: var(--lobby-gold);
+}
+
+#app-container:not(:has(#game-board.active)) .player-lobby-card .player-role {
+  font-family: var(--lobby-font-display);
+  color: var(--lobby-gold-muted);
+  letter-spacing: 0.12em;
+}
+
+#app-container:not(:has(#game-board.active)) .player-avatar-emoji {
+  background: var(--lobby-input-bg);
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+}
+
+/* ─── Scores / history list items ─── */
+#app-container:not(:has(#game-board.active)) #scores-panel .past-games-scroll {
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+  background: rgba(10, 8, 4, 0.4);
+}
+
+#app-container:not(:has(#game-board.active)) #scores-panel .players-stats-container {
+  color: var(--lobby-text-muted);
+  font-family: var(--lobby-font-body);
+}
+
+#app-container:not(:has(#game-board.active)) #scores-panel .player-stat-row {
+  background: rgba(10, 8, 4, 0.65);
+  border: 1px solid var(--lobby-border);
+  border-radius: 4px;
+}
+
+#app-container:not(:has(#game-board.active)) #scores-panel .player-stat-row:hover {
+  border-color: rgba(212, 168, 75, 0.45);
+  background: rgba(212, 168, 75, 0.05);
+}
+
+#app-container:not(:has(#game-board.active)) #scores-panel .player-stat-name {
+  font-family: var(--lobby-font-display);
+  font-variant: small-caps;
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  color: var(--lobby-text);
+}
+
+#app-container:not(:has(#game-board.active)) #scores-panel .player-stat-score-total {
+  font-family: var(--lobby-font-display);
+  color: var(--lobby-gold);
+}

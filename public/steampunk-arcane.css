@@ -1,0 +1,1413 @@
+/* ═══ Wizzzzard — Steampunk Arcane In-Game Theme (visual only) ═══ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English&display=swap');
+
+:root {
+  --bg-void: #161a1e;
+  --bg-table: #1e3228;
+  --bg-panel: #1e1a16;
+  --bg-card: #2a2218;
+  --copper: #b87333;
+  --copper-bright: #d4934a;
+  --copper-glow: #e8a84055;
+  --teal-glow: #2a8b72;
+  --teal-bright: #3dd4ad;
+  --rune-text: #5cb896;
+  --parchment: #e8dcc0;
+  --parchment-dim: #a89878;
+  --gold-line: #c9a84c;
+  --gold-dim: #c9a84c44;
+  --font-heading: 'Cinzel', serif;
+  --font-decorative: 'Cinzel Decorative', serif;
+  --font-body: 'IM Fell English', serif;
+}
+
+@keyframes gearSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes gearSpinReverse {
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes steampunkPulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 8px var(--copper), 0 0 16px var(--copper-glow);
+  }
+  50% {
+    opacity: 0.5;
+    box-shadow: 0 0 4px var(--copper);
+  }
+}
+
+/* ─── Background & vignette ─── */
+#app-container:has(#game-board.active) {
+  background: var(--bg-void);
+  position: relative;
+}
+
+#app-container:has(#game-board.active)::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9000;
+  background: radial-gradient(ellipse 88% 75% at center, transparent 50%, rgba(0, 0, 0, 0.35) 100%);
+}
+
+#game-board.active {
+  background: var(--bg-void);
+  font-family: var(--font-body);
+  color: var(--parchment);
+}
+
+#game-board.active .center-board {
+  background: var(--bg-void);
+  border-color: var(--gold-dim);
+}
+
+/* ─── Nav tabs (in game) ─── */
+#app-container:has(#game-board.active) .main-tab-bar {
+  background: linear-gradient(180deg, #0f0d0a, #0b0d0f);
+  border-bottom: 1px solid var(--gold-dim);
+  padding: 6px 12px;
+}
+
+#app-container:has(#game-board.active) .tab-btn {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--parchment-dim);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 8px 16px;
+}
+
+#app-container:has(#game-board.active) .tab-btn:hover {
+  color: var(--parchment);
+  background: transparent;
+}
+
+#app-container:has(#game-board.active) .tab-btn.active {
+  color: var(--copper-bright);
+  border-bottom-color: var(--copper);
+  text-shadow: 0 0 12px var(--copper-glow);
+  background: transparent;
+}
+
+/* ─── Round info (top-left) ─── */
+#game-board.active .game-meta-compact {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--parchment);
+  background: transparent;
+  border: none;
+}
+
+#game-board.active .game-meta-round {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--parchment);
+}
+
+#game-board.active .game-meta-room {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--copper-bright);
+  letter-spacing: 3px;
+}
+
+#game-board.active .game-meta-label {
+  font-family: var(--font-heading);
+  color: var(--parchment-dim);
+  letter-spacing: 2px;
+}
+
+#game-board.active .badge-mini {
+  font-family: var(--font-heading);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--copper);
+  background: linear-gradient(135deg, #1a1510, #12100e);
+  border: 1px solid var(--gold-dim);
+  border-radius: 3px;
+  padding: 2px 8px;
+}
+
+/* ─── Sidebar ─── */
+#game-board.active .sidebar-panel {
+  background: var(--bg-panel);
+  border-right: 1px solid var(--gold-dim);
+  border-left: none;
+  border-top: none;
+  border-bottom: none;
+  box-shadow: inset 0 0 40px #c9a84c08;
+  position: relative;
+}
+
+#game-board.active .sidebar-panel::before {
+  content: '';
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, #c9a84c08 0%, transparent 100%);
+  z-index: 0;
+}
+
+#game-board.active .sidebar-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+#game-board.active .panel-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--copper-bright);
+  border: none;
+  padding-bottom: 0;
+  margin-bottom: 12px;
+}
+
+#game-board.active .panel-title::before,
+#game-board.active .panel-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--copper), transparent);
+  display: block;
+}
+
+#game-board.active .sidebar-divider {
+  background: var(--gold-dim);
+  height: 1px;
+}
+
+/* Player cards */
+#game-board.active .player-item {
+  background: linear-gradient(135deg, #2a2218, #1e1a16);
+  border: 1px solid var(--gold-dim);
+  border-radius: 6px;
+}
+
+#game-board.active .player-item.is-active {
+  border-color: var(--teal-bright);
+  box-shadow: 0 0 12px #2db89733, inset 0 0 8px #2db89711;
+  background: linear-gradient(135deg, #1a1510, #12100e);
+}
+
+#game-board.active .player-item.is-you {
+  border-color: var(--gold-line);
+  background: linear-gradient(135deg, #1e1812, #14100c);
+}
+
+#game-board.active .player-name {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--parchment);
+}
+
+#game-board.active .player-stat-value {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--copper-bright);
+}
+
+#game-board.active .player-stat-value.score-positive {
+  color: var(--teal-bright);
+}
+
+#game-board.active .player-stat-value.score-negative {
+  color: #cc6666;
+}
+
+#game-board.active .player-stats {
+  gap: 6px;
+}
+
+#game-board.active .player-stat {
+  min-width: 26px;
+}
+
+#game-board.active .player-stat-label {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--parchment-dim);
+}
+
+#game-board.active .player-status-line {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--parchment-dim);
+}
+
+#game-board.active .player-status-line.is-thinking {
+  color: var(--teal-bright);
+}
+
+/* BOT badge in sidebar — status line often says "Bot" */
+#game-board.active .player-role-icons {
+  font-family: var(--font-heading);
+  font-size: 8px;
+  letter-spacing: 2px;
+}
+
+/* ─── Scoreboard table ─── */
+#game-board.active .scoreboard-table {
+  font-family: var(--font-heading);
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#game-board.active .scoreboard-table th {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--copper);
+  border-bottom: 1px solid var(--gold-dim);
+  padding: 8px 6px;
+}
+
+#game-board.active .scoreboard-table td {
+  font-size: 13px;
+  color: var(--parchment);
+  border-bottom: 1px solid var(--gold-dim);
+  padding: 8px 6px;
+}
+
+#game-board.active .scoreboard-table .col-total,
+#game-board.active .scoreboard-table td.col-total {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--copper-bright);
+}
+
+#game-board.active .scoreboard-table tr:hover td {
+  background: linear-gradient(90deg, #c9a84c08, transparent);
+}
+
+#game-board.active .scoreboard-player-name {
+  font-family: var(--font-heading);
+  color: var(--parchment);
+}
+
+/* ─── End game early ─── */
+#game-board.active #btn-end-game {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #cc4444;
+  border: 1px solid #8b1a1a66;
+  background: linear-gradient(135deg, #1a0d0d, #120808);
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+#game-board.active #btn-end-game:hover {
+  border-color: #cc4444;
+  box-shadow: 0 0 12px #cc444433;
+  color: #ee6666;
+}
+
+#game-board.active .host-end-game-note {
+  font-family: var(--font-body);
+  color: var(--parchment-dim);
+  font-size: 11px;
+}
+
+/* ─── Action banner ─── */
+#game-board.active .action-banner-box {
+  background: linear-gradient(90deg, transparent 0%, #1a1510 20%, #1e1a12 50%, #1a1510 80%, transparent 100%);
+  border-top: 1px solid var(--gold-dim);
+  border-bottom: 1px solid var(--gold-dim);
+  border-left: none;
+  border-right: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+#game-board.active #action-banner-text,
+#game-board.active .status-text {
+  font-family: var(--font-decorative);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--parchment);
+}
+
+#game-board.active .status-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--copper-bright);
+  box-shadow: 0 0 8px var(--copper), 0 0 16px var(--copper-glow);
+  animation: steampunkPulse 2s ease-in-out infinite;
+}
+
+/* ─── Table / play area ─── */
+#game-board.active .card-table-container {
+  background: transparent;
+}
+
+#game-board.active .table-play-area {
+  background: transparent;
+}
+
+#game-board.active .felt-table,
+#game-board.active .mystic-table {
+  background:
+    radial-gradient(ellipse at center, #2a5240 0%, #234435 40%, #1a3228 70%, #142820 100%);
+  border: none;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: visible;
+}
+
+#game-board.active .felt-table::before,
+#game-board.active .mystic-table::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-conic-gradient(#1a6b5a08 0deg 1deg, transparent 1deg 30deg);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Outer gear ring */
+#game-board.active .mystic-gear-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid var(--copper);
+  box-shadow: 0 0 20px var(--copper-glow), inset 0 0 20px #00000066;
+  background: repeating-conic-gradient(
+    from 0deg,
+    var(--copper) 0deg 4deg,
+    transparent 4deg 8deg
+  );
+  mask-image: radial-gradient(circle, transparent 58%, #000 62%, #000 78%, transparent 82%);
+  -webkit-mask-image: radial-gradient(circle, transparent 58%, #000 62%, #000 78%, transparent 82%);
+  animation: gearSpin 90s linear infinite;
+  filter: drop-shadow(0 0 8px var(--copper-glow));
+  z-index: 3;
+}
+
+#game-board.active .mystic-gear-ring::after {
+  border: 2px solid var(--copper);
+  box-shadow: inset 0 0 16px #00000088;
+}
+
+/* Middle rune ring */
+#game-board.active .mystic-rune-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--teal-glow);
+  box-shadow: 0 0 12px #1a6b5a44, inset 0 0 20px #1a6b5a22;
+  animation: gearSpinReverse 60s linear infinite;
+  z-index: 5;
+  background: transparent;
+}
+
+#game-board.active .mystic-rune-ring::before {
+  content: 'ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ ᚷ ᚹ ᚺ ᚾ ᛁ ᛃ ᛇ ᛈ ᛉ ᛊ ᛏ ᛒ ᛖ ᛗ ᛚ ᛜ ᛞ ᛟ';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 8px;
+  color: var(--rune-text);
+  opacity: 0.7;
+  transform: none;
+  text-shadow: 0 0 6px #1a6b5a55;
+  padding: 8%;
+  line-height: 1.6;
+}
+
+#game-board.active .mystic-rune-ring::after {
+  background: radial-gradient(circle, #1a6b5a15 0%, transparent 70%);
+  box-shadow: none;
+}
+
+/* Inner play core */
+#game-board.active .felt-drop-zone,
+#game-board.active .mystic-arena-core {
+  background:
+    radial-gradient(ellipse at center, #2e5444 0%, #264838 50%, #1e3a30 100%);
+  border: 1px solid #3a8b7244;
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.28);
+}
+
+/* Gear mechanism — subtler under rings */
+#game-board.active .mystic-gear-mechanism {
+  opacity: 0.35;
+  animation: gearSpin 120s linear infinite;
+}
+
+/* Trump label & card */
+#game-board.active .table-trump-label,
+#game-board.active .trump-label {
+  font-family: var(--font-decorative);
+  font-size: 13px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--copper-bright);
+  text-shadow: 0 0 12px var(--copper-glow), 0 0 24px var(--copper-glow);
+}
+
+#game-board.active .table-center-trump .mini-card.trump-card-display,
+#game-board.active .job-card-box .mini-card.trump-card-display,
+#game-board.active .bid-overlay-trump .mini-card.trump-card-display {
+  border: 2px solid var(--copper) !important;
+  border-radius: 8px;
+  box-shadow: 0 0 16px var(--copper-glow), 0 0 4px var(--copper) !important;
+}
+
+#game-board.active .mystic-trump-banner {
+  background: transparent;
+  border: none;
+}
+
+/* ─── Bot / table seat panels ─── */
+#game-board.active .table-seat {
+  background: linear-gradient(135deg, #1a1510cc, #12100ecc);
+  border: 1px solid var(--gold-dim);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px #00000066;
+}
+
+#game-board.active .table-seat.active-turn {
+  border-color: var(--teal-bright);
+  box-shadow: 0 0 12px #2db89733, inset 0 0 8px #2db89711;
+}
+
+#game-board.active .table-seat-name,
+#game-board.active .opponent-name {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--parchment);
+}
+
+#game-board.active .table-seat-bidwon {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--parchment-dim);
+}
+
+#game-board.active .table-seat-bot-tag,
+#game-board.active .bot-tag {
+  font-family: var(--font-heading);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--parchment-dim);
+  border: 1px solid var(--gold-dim);
+  background: #1a1510;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+#game-board.active .lead-wax-seal,
+#game-board.active .lead-badge {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: var(--copper);
+  color: #0b0d0f;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: none;
+  box-shadow: 0 0 8px var(--copper-glow);
+}
+
+/* ─── Unified grimoire cards: dark arcane face, glowing suit accents ─── */
+
+/* Dark textured face + subtle suit tint at center glow */
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-blue,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-water,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-blue,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-water,
+.mini-card.grimoire-card.suit-blue,
+.mini-card.grimoire-card.suit-water {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 4px),
+    radial-gradient(ellipse at 50% 72%, rgba(40, 130, 255, 0.14) 0%, transparent 58%),
+    linear-gradient(180deg, #151a22 0%, #0e1118 52%, #090b10 100%) !important;
+  border-color: rgba(55, 140, 255, 0.55) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-green,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-nature,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-green,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-nature,
+.mini-card.grimoire-card.suit-green,
+.mini-card.grimoire-card.suit-nature {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 4px),
+    radial-gradient(ellipse at 50% 72%, rgba(50, 180, 90, 0.13) 0%, transparent 58%),
+    linear-gradient(180deg, #141a16 0%, #0e1210 52%, #090b09 100%) !important;
+  border-color: rgba(60, 175, 95, 0.55) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-red,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-fire,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-red,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-fire,
+.mini-card.grimoire-card.suit-red,
+.mini-card.grimoire-card.suit-fire {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 4px),
+    radial-gradient(ellipse at 50% 72%, rgba(255, 90, 50, 0.14) 0%, transparent 58%),
+    linear-gradient(180deg, #1a1414 0%, #120e0e 52%, #0c0909 100%) !important;
+  border-color: rgba(230, 85, 55, 0.58) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-yellow,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-light,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-yellow,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-light,
+.mini-card.grimoire-card.suit-yellow,
+.mini-card.grimoire-card.suit-light {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 4px),
+    radial-gradient(ellipse at 50% 72%, rgba(255, 190, 60, 0.13) 0%, transparent 58%),
+    linear-gradient(180deg, #1a1810 0%, #12100c 52%, #0c0b08 100%) !important;
+  border-color: rgba(255, 185, 55, 0.58) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-purple,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-indigo,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-arcane,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-purple,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-indigo,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-arcane,
+.mini-card.grimoire-card.suit-purple,
+.mini-card.grimoire-card.suit-indigo,
+.mini-card.grimoire-card.suit-arcane {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 4px),
+    radial-gradient(ellipse at 50% 72%, rgba(170, 90, 255, 0.13) 0%, transparent 58%),
+    linear-gradient(180deg, #16141c 0%, #100e14 52%, #0a090c 100%) !important;
+  border-color: rgba(170, 100, 230, 0.55) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card,
+#game-board.active .played-card-slot .card-unit.grimoire-card,
+#game-board.active .mini-card.grimoire-card {
+  border-radius: 10px;
+  overflow: hidden;
+  border-width: 1.5px;
+  filter: none;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+#game-board.active .grimoire-card .card-vignette {
+  box-shadow: inset 0 0 36px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Hand + table share the same corner number style */
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-corner-tl .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-corner-tl .card-value,
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-value.top,
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-corner-tl .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-corner-tl .card-value,
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-value.top {
+  font-family: var(--font-grimoire-num, var(--font-heading)) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  color: #f2f2f2 !important;
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.35),
+    0 0 4px rgba(255, 255, 255, 0.2),
+    0 1px 5px rgba(0, 0, 0, 0.95) !important;
+  -webkit-text-stroke: 0;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-corner-br .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-corner-br .card-value,
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-value.bottom,
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-corner-br .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-corner-br .card-value,
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-value.bottom {
+  font-family: var(--font-grimoire-num, var(--font-heading)) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  color: #f2f2f2 !important;
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.35),
+    0 0 4px rgba(255, 255, 255, 0.2),
+    0 1px 5px rgba(0, 0, 0, 0.95) !important;
+  -webkit-text-stroke: 0;
+  transform: rotate(180deg) !important;
+}
+
+/* Hand numbers scale with hand card size; table uses fixed trick-card tokens */
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-corner-tl .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-corner-tl .card-value,
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-value.top {
+  font-size: calc(var(--hand-card-width, var(--card-width)) * 0.38) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-corner-br .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-corner-br .card-value,
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-value.bottom {
+  font-size: calc(var(--hand-card-width, var(--card-width)) * 0.32) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-wizard .card-corner-tl .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-jester .card-corner-tl .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-wizard .card-value.top,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-jester .card-value.top {
+  font-size: calc(var(--hand-card-width, var(--card-width)) * 0.42) !important;
+}
+
+/* Corner numbers stay luminous white on dark face */
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-fire .card-corner .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-red .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-fire .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-red .card-corner .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-water .card-corner .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-blue .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-water .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-blue .card-corner .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-nature .card-corner .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-green .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-nature .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-green .card-corner .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-light .card-corner .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-yellow .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-light .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-yellow .card-corner .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-arcane .card-corner .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-purple .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-arcane .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-purple .card-corner .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-wizard .card-corner-tl .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-wizard .card-corner-tl .card-num,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-jester .card-corner-tl .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-jester .card-corner-tl .card-num {
+  color: #f2f2f2 !important;
+}
+
+/* Center icons — localized suit glow on dark card */
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-water .card-center-icon,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-blue .card-center-icon,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-water .card-center-icon,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-blue .card-center-icon,
+#game-board.active .mini-card.grimoire-card.suit-water .card-center-icon,
+#game-board.active .mini-card.grimoire-card.suit-blue .card-center-icon {
+  color: #5eb0ff;
+  filter: drop-shadow(0 0 6px #4da3ff) drop-shadow(0 0 14px rgba(77, 163, 255, 0.55)) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-fire .card-center-icon,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-red .card-center-icon,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-fire .card-center-icon,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-red .card-center-icon,
+#game-board.active .mini-card.grimoire-card.suit-fire .card-center-icon,
+#game-board.active .mini-card.grimoire-card.suit-red .card-center-icon {
+  color: #ff7a45;
+  filter: drop-shadow(0 0 6px #ff6030) drop-shadow(0 0 14px rgba(255, 96, 48, 0.55)) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-nature .card-center-icon,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-green .card-center-icon,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-nature .card-center-icon,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-green .card-center-icon,
+#game-board.active .mini-card.grimoire-card.suit-nature .card-center-icon,
+#game-board.active .mini-card.grimoire-card.suit-green .card-center-icon {
+  color: #5fd878;
+  filter: drop-shadow(0 0 6px #4ecf68) drop-shadow(0 0 14px rgba(78, 207, 104, 0.5)) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-light .card-center-icon,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-yellow .card-center-icon,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-light .card-center-icon,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-yellow .card-center-icon,
+#game-board.active .mini-card.grimoire-card.suit-light .card-center-icon,
+#game-board.active .mini-card.grimoire-card.suit-yellow .card-center-icon {
+  color: #ffd54a;
+  filter: drop-shadow(0 0 6px #ffc830) drop-shadow(0 0 14px rgba(255, 200, 48, 0.52)) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-arcane .card-center-icon,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-purple .card-center-icon,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-arcane .card-center-icon,
+#game-board.active .played-card-slot .card-unit.grimoire-card.suit-purple .card-center-icon,
+#game-board.active .mini-card.grimoire-card.suit-arcane .card-center-icon,
+#game-board.active .mini-card.grimoire-card.suit-purple .card-center-icon {
+  color: #c88aff;
+  filter: drop-shadow(0 0 6px #b06cf0) drop-shadow(0 0 14px rgba(176, 108, 240, 0.5)) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-center-icon,
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-center-icon {
+  opacity: 1 !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card .card-center-icon {
+  font-size: calc(var(--hand-card-width, var(--card-width)) * 0.38) !important;
+}
+
+/* Rank-themed emoji grows with card value (2 = small droplet → 14 = tsunami-scale) */
+#game-board.active .grimoire-card .card-center-icon.card-rank-scale-2 { transform: scale(0.62); }
+#game-board.active .grimoire-card .card-center-icon.card-rank-scale-3 { transform: scale(0.68); }
+#game-board.active .grimoire-card .card-center-icon.card-rank-scale-4 { transform: scale(0.74); }
+#game-board.active .grimoire-card .card-center-icon.card-rank-scale-5 { transform: scale(0.8); }
+#game-board.active .grimoire-card .card-center-icon.card-rank-scale-6 { transform: scale(0.86); }
+#game-board.active .grimoire-card .card-center-icon.card-rank-scale-7 { transform: scale(0.92); }
+#game-board.active .grimoire-card .card-center-icon.card-rank-scale-8 { transform: scale(0.98); }
+#game-board.active .grimoire-card .card-center-icon.card-rank-scale-9 { transform: scale(1.04); }
+#game-board.active .grimoire-card .card-center-icon.card-rank-scale-10 { transform: scale(1.1); }
+#game-board.active .grimoire-card .card-center-icon.card-rank-scale-11 { transform: scale(1.16); }
+#game-board.active .grimoire-card .card-center-icon.card-rank-scale-12 { transform: scale(1.22); }
+#game-board.active .grimoire-card .card-center-icon.card-rank-scale-13 { transform: scale(1.3); }
+#game-board.active .grimoire-card .card-center-icon.card-rank-scale-14 { transform: scale(1.42); }
+
+#game-board.active .grimoire-card.suit-water .card-center-icon.card-rank-scale-14,
+#game-board.active .grimoire-card.suit-blue .card-center-icon.card-rank-scale-14 {
+  filter: drop-shadow(0 0 8px rgba(55, 140, 255, 0.9)) drop-shadow(0 0 18px rgba(55, 140, 255, 0.55)) !important;
+}
+
+#game-board.active .grimoire-card.suit-fire .card-center-icon.card-rank-scale-14,
+#game-board.active .grimoire-card.suit-red .card-center-icon.card-rank-scale-14 {
+  filter: drop-shadow(0 0 8px rgba(255, 90, 40, 0.9)) drop-shadow(0 0 18px rgba(255, 90, 40, 0.55)) !important;
+}
+
+#game-board.active .grimoire-card.suit-nature .card-center-icon.card-rank-scale-14,
+#game-board.active .grimoire-card.suit-green .card-center-icon.card-rank-scale-14 {
+  filter: drop-shadow(0 0 8px rgba(50, 180, 90, 0.85)) drop-shadow(0 0 18px rgba(50, 180, 90, 0.5)) !important;
+}
+
+#game-board.active .grimoire-card.suit-light .card-center-icon.card-rank-scale-14,
+#game-board.active .grimoire-card.suit-yellow .card-center-icon.card-rank-scale-14 {
+  filter: drop-shadow(0 0 8px rgba(255, 210, 60, 0.9)) drop-shadow(0 0 18px rgba(255, 210, 60, 0.55)) !important;
+}
+
+#game-board.active .grimoire-card.suit-arcane .card-center-icon.card-rank-scale-14,
+#game-board.active .grimoire-card.suit-purple .card-center-icon.card-rank-scale-14 {
+  filter: drop-shadow(0 0 8px rgba(180, 90, 255, 0.9)) drop-shadow(0 0 18px rgba(180, 90, 255, 0.55)) !important;
+}
+
+/* Hand hover — lift only, keep grimoire face */
+#game-board.active .hand-cards-row .card-unit.grimoire-card.hand-card-hovered,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.playable-card:hover,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.playable:hover {
+  transform: rotate(var(--fan-rot, 0deg)) translateY(calc(var(--fan-y, 0px) - 16px)) scale(1.04) !important;
+  z-index: 10 !important;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.55),
+    0 0 14px rgba(255, 255, 255, 0.06) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-water:hover,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-blue:hover {
+  box-shadow: 0 0 16px rgba(55, 140, 255, 0.28), 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-nature:hover,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-green:hover {
+  box-shadow: 0 0 16px rgba(60, 175, 95, 0.28), 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-fire:hover,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-red:hover {
+  box-shadow: 0 0 16px rgba(230, 85, 55, 0.28), 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-light:hover,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-yellow:hover {
+  box-shadow: 0 0 16px rgba(255, 185, 55, 0.28), 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-arcane:hover,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.suit-purple:hover {
+  box-shadow: 0 0 16px rgba(170, 100, 230, 0.28), 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Trump mini-card — same grimoire face as table cards */
+#game-board.active .table-center-trump .mini-card.grimoire-card,
+#game-board.active .job-card-box .mini-card.grimoire-card,
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card {
+  border-radius: 10px !important;
+  overflow: hidden;
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.45),
+    0 0 16px var(--copper-glow),
+    0 0 4px var(--copper) !important;
+}
+
+#game-board.active .mini-card.grimoire-card.trump-card-display {
+  border: 2px solid var(--copper) !important;
+}
+
+#game-board.active .mini-card.grimoire-card .card-corner-tl .card-num,
+#game-board.active .mini-card.grimoire-card .card-corner-tl .card-value,
+#game-board.active .mini-card.grimoire-card .card-value.top {
+  font-family: var(--font-grimoire-num, var(--font-heading)) !important;
+  font-weight: 900 !important;
+  font-size: 23px !important;
+  color: #f2f2f2 !important;
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.3),
+    0 1px 5px rgba(0, 0, 0, 0.95) !important;
+}
+
+#game-board.active .mini-card.grimoire-card .card-corner-br .card-num,
+#game-board.active .mini-card.grimoire-card .card-corner-br .card-value,
+#game-board.active .mini-card.grimoire-card .card-value.bottom {
+  font-family: var(--font-grimoire-num, var(--font-heading)) !important;
+  font-weight: 900 !important;
+  font-size: 19px !important;
+  color: #f2f2f2 !important;
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.3),
+    0 1px 5px rgba(0, 0, 0, 0.95) !important;
+  transform: rotate(180deg) !important;
+}
+
+#game-board.active .mini-card.grimoire-card .card-center-icon {
+  font-size: 24px !important;
+}
+
+#game-board.active .mini-card.grimoire-card.suit-fire .card-corner .card-num,
+#game-board.active .mini-card.grimoire-card.suit-red .card-corner .card-num,
+#game-board.active .mini-card.grimoire-card.suit-water .card-corner .card-num,
+#game-board.active .mini-card.grimoire-card.suit-blue .card-corner .card-num,
+#game-board.active .mini-card.grimoire-card.suit-nature .card-corner .card-num,
+#game-board.active .mini-card.grimoire-card.suit-green .card-corner .card-num,
+#game-board.active .mini-card.grimoire-card.suit-light .card-corner .card-num,
+#game-board.active .mini-card.grimoire-card.suit-yellow .card-corner .card-num,
+#game-board.active .mini-card.grimoire-card.suit-arcane .card-corner .card-num,
+#game-board.active .mini-card.grimoire-card.suit-purple .card-corner .card-num {
+  color: #f2f2f2 !important;
+}
+
+/* Mini-card inherits grimoire suit gradients (defined above with hand + table) */
+
+/* Hand footer — lighter */
+#game-board.active .my-hand-panel {
+  background: linear-gradient(180deg, #1a1e22 0%, #1e1a16 100%);
+  border-top: 1px solid var(--gold-dim);
+}
+
+#game-board.active .empty-hand-placeholder {
+  font-family: var(--font-body);
+  color: var(--parchment-dim);
+  font-style: italic;
+}
+
+#game-board.active .played-card-slot.winner-card .card-unit.grimoire-card {
+  box-shadow:
+    0 0 20px var(--gold-dim),
+    0 0 8px var(--copper-glow),
+    0 4px 18px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Bid overlay */
+#game-board.active .bid-panel-top {
+  background: linear-gradient(180deg, #1e1a16f5, #141210f5) !important;
+  border: 1.5px solid rgba(201, 168, 76, 0.5) !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(201, 168, 76, 0.08) !important;
+}
+
+#game-board.active .bid-overlay-trump {
+  border-bottom-color: rgba(201, 168, 76, 0.28) !important;
+}
+
+#game-board.active .bid-stepper-container {
+  justify-content: center;
+  width: 100%;
+}
+
+#game-board.active #host-end-game-section {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding-top: 10px;
+  width: 100%;
+  border-top: 1px solid rgba(201, 168, 76, 0.2);
+}
+
+#game-board.active .bid-overlay-title {
+  font-family: var(--font-decorative);
+  letter-spacing: 4px;
+  color: var(--parchment);
+}
+
+#game-board.active .bid-stepper-value {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--copper-bright);
+}
+
+/* Ambient layers */
+#game-board.active .mystic-steampunk-bg,
+#game-board.active .mystic-circuit-traces,
+#game-board.active .mystic-clock-motifs,
+#game-board.active .mystic-fog,
+#game-board.active .mystic-dust-particles {
+  opacity: 0.4;
+}
+
+#game-board.active .mystic-warm-glow {
+  background: radial-gradient(ellipse at 50% 80%, #e8a84028 0%, transparent 60%);
+}
+
+#game-board.active .mystic-glass-portal {
+  border-color: #c9a84c22;
+  background: radial-gradient(circle at 50% 40%, #2db89708 0%, transparent 55%);
+}
+
+#game-board.active .mystic-mahogany-ring {
+  border-color: var(--copper);
+  opacity: 0.5;
+}
+
+/* ─── Card layer stack: numbers above filigree & corner ornaments ─── */
+#game-board.active .grimoire-card .card-vignette,
+#game-board.active .grimoire-card .card-art-layer,
+#game-board.active .grimoire-card .card-inner-border {
+  z-index: 1 !important;
+}
+
+#game-board.active .grimoire-card .card-filigree-frame {
+  z-index: 3 !important;
+}
+
+#game-board.active .grimoire-card .corner-ornament {
+  z-index: 4 !important;
+}
+
+#game-board.active .grimoire-card .card-center-icon,
+#game-board.active .grimoire-card .card-suit-emoji {
+  z-index: 5 !important;
+}
+
+#game-board.active .grimoire-card .card-corner-tl,
+#game-board.active .grimoire-card .card-corner-br,
+#game-board.active .grimoire-card .card-corner {
+  z-index: 10 !important;
+}
+
+/* ─── Sidebar: no scroll — scale to fit viewport ─── */
+#game-board.active .sidebar-panel {
+  --sidebar-fit-scale: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+#game-board.active .sidebar-scalable {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transform: scale(var(--sidebar-fit-scale, 1));
+  transform-origin: top center;
+}
+
+#game-board.active .sidebar-scalable .game-meta-compact,
+#game-board.active .sidebar-scalable .panel-title,
+#game-board.active .sidebar-scalable .sidebar-divider {
+  flex-shrink: 0;
+}
+
+#game-board.active .sidebar-scalable .players-stats-container {
+  flex: 0 0 auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+#game-board.active .player-item,
+#game-board.active .scoreboard-table tr {
+  flex-shrink: 0;
+}
+
+/* Base compacting from 3 players up */
+#game-board.active[data-players="3"] .player-item {
+  padding: 9px 10px;
+  gap: 8px;
+}
+
+#game-board.active[data-players="3"] .player-avatar {
+  width: 30px;
+  height: 30px;
+  font-size: 14px;
+}
+
+#game-board.active[data-players="3"] .player-name { font-size: 12px; }
+#game-board.active[data-players="3"] .player-status-line { font-size: 10px; }
+#game-board.active[data-players="3"] .player-stat-value { font-size: 16px; }
+#game-board.active[data-players="3"] .panel-title { margin-bottom: 8px; }
+
+#game-board.active[data-players="4"] .player-item {
+  padding: 8px 10px;
+  gap: 8px;
+}
+
+#game-board.active[data-players="4"] .player-avatar {
+  width: 30px;
+  height: 30px;
+  font-size: 14px;
+}
+
+#game-board.active[data-players="4"] .player-name { font-size: 12px; }
+#game-board.active[data-players="4"] .player-status-line { font-size: 10px; }
+#game-board.active[data-players="4"] .player-stat-value { font-size: 16px; }
+#game-board.active[data-players="4"] .player-stat-label { font-size: 8px; }
+#game-board.active[data-players="4"] .panel-title { margin-bottom: 8px; font-size: 9px; letter-spacing: 3px; }
+
+#game-board.active[data-players="5"] .player-item {
+  padding: 6px 8px;
+  gap: 6px;
+}
+
+#game-board.active[data-players="5"] .player-avatar {
+  width: 26px;
+  height: 26px;
+  font-size: 12px;
+}
+
+#game-board.active[data-players="5"] .player-name { font-size: 10px; }
+#game-board.active[data-players="5"] .player-status-line { font-size: 8px; }
+#game-board.active[data-players="5"] .player-stat-value { font-size: 13px; }
+#game-board.active[data-players="5"] .player-stat-label { font-size: 7px; }
+#game-board.active[data-players="5"] .panel-title { margin-bottom: 4px; font-size: 7px; letter-spacing: 2px; }
+#game-board.active[data-players="5"] .player-stats { gap: 4px; }
+#game-board.active[data-players="5"] .player-stat { min-width: 20px; }
+
+#game-board.active[data-players="6"] .player-item {
+  padding: 5px 7px;
+  gap: 5px;
+}
+
+#game-board.active[data-players="6"] .player-avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 11px;
+}
+
+#game-board.active[data-players="6"] .player-name { font-size: 9px; }
+#game-board.active[data-players="6"] .player-status-line { display: none; }
+#game-board.active[data-players="6"] .player-role-icons { font-size: 9px; }
+#game-board.active[data-players="6"] .player-stat-value { font-size: 12px; }
+#game-board.active[data-players="6"] .player-stat-label { font-size: 6px; letter-spacing: 1px; }
+#game-board.active[data-players="6"] .panel-title { margin-bottom: 3px; font-size: 7px; letter-spacing: 1px; }
+#game-board.active[data-players="6"] .sidebar-divider { margin: 2px 0; }
+#game-board.active[data-players="6"] .game-meta-compact { padding: 3px 5px; font-size: 9px; }
+#game-board.active[data-players="6"] .player-stats { gap: 3px; }
+#game-board.active[data-players="6"] .player-stat { min-width: 18px; }
+#game-board.active[data-players="6"] .player-stats-divider { height: 18px; }
+
+/* ─── Layout: production table geometry (steampunk skin unchanged) ─── */
+#game-board.active .center-board {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#game-board.active .action-banner-box {
+  flex-shrink: 0;
+}
+
+#game-board.active .card-table-container {
+  flex: 1 1 0;
+  min-height: min(46vh, 400px);
+  padding-bottom: 10px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#game-board.active .table-play-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#game-board.active .table-felt-wrap {
+  --table-size: min(100cqw, 560px, max(50vh, 100cqh, 46vmin));
+  width: var(--table-size);
+  height: var(--table-size);
+  flex-shrink: 0;
+}
+
+#game-board.active .table-seats-layer {
+  inset: -56px;
+  z-index: 20;
+}
+
+/* Trick cards: fixed size — never inherit hand card dimensions */
+#game-board.active {
+  --trick-card-width: 63px;
+  --trick-card-height: 90px;
+}
+
+#game-board.active .played-card-slot .card-unit,
+#game-board.active .played-card-slot .card-unit.grimoire-card {
+  width: var(--trick-card-width) !important;
+  height: var(--trick-card-height) !important;
+  min-width: var(--trick-card-width) !important;
+  max-width: var(--trick-card-width) !important;
+  min-height: var(--trick-card-height) !important;
+  max-height: var(--trick-card-height) !important;
+  padding: 5px !important;
+}
+
+#game-board.active .trick-cards-grid.players-5 .played-card-slot .card-unit {
+  --trick-card-width: 58px;
+  --trick-card-height: 84px;
+}
+
+#game-board.active .trick-cards-grid.players-6 .played-card-slot .card-unit {
+  --trick-card-width: 52px;
+  --trick-card-height: 76px;
+}
+
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-corner-tl .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-corner-tl .card-value,
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-value.top {
+  font-size: 20px !important;
+}
+
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-corner-br .card-num,
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-corner-br .card-value,
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-value.bottom {
+  font-size: 17px !important;
+}
+
+#game-board.active .played-card-slot .card-unit.grimoire-card .card-center-icon {
+  font-size: 1.25rem !important;
+}
+
+#game-board.active .trick-cards-grid.players-5 .played-card-slot .card-unit.grimoire-card .card-corner-tl .card-num,
+#game-board.active .trick-cards-grid.players-5 .played-card-slot .card-unit.grimoire-card .card-value.top {
+  font-size: 18px !important;
+}
+
+#game-board.active .trick-cards-grid.players-5 .played-card-slot .card-unit.grimoire-card .card-corner-br .card-num,
+#game-board.active .trick-cards-grid.players-5 .played-card-slot .card-unit.grimoire-card .card-value.bottom {
+  font-size: 15px !important;
+}
+
+#game-board.active .trick-cards-grid.players-6 .played-card-slot .card-unit.grimoire-card .card-corner-tl .card-num,
+#game-board.active .trick-cards-grid.players-6 .played-card-slot .card-unit.grimoire-card .card-value.top {
+  font-size: 16px !important;
+}
+
+#game-board.active .trick-cards-grid.players-6 .played-card-slot .card-unit.grimoire-card .card-corner-br .card-num,
+#game-board.active .trick-cards-grid.players-6 .played-card-slot .card-unit.grimoire-card .card-value.bottom {
+  font-size: 14px !important;
+}
+
+#game-board.active .table-center-trump .mini-card.grimoire-card,
+#game-board.active .table-center-trump .mini-card {
+  width: 60px !important;
+  height: 82px !important;
+}
+
+#game-board.active .table-center-trump .mini-card.grimoire-card .card-corner-tl .card-num,
+#game-board.active .table-center-trump .mini-card.grimoire-card .card-corner-tl .card-value,
+#game-board.active .table-center-trump .mini-card.grimoire-card .card-value.top,
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card .card-corner-tl .card-num,
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card .card-corner-tl .card-value,
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card .card-value.top {
+  font-size: 23px !important;
+}
+
+#game-board.active .table-center-trump .mini-card.grimoire-card .card-corner-br .card-num,
+#game-board.active .table-center-trump .mini-card.grimoire-card .card-corner-br .card-value,
+#game-board.active .table-center-trump .mini-card.grimoire-card .card-value.bottom,
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card .card-corner-br .card-num,
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card .card-corner-br .card-value,
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card .card-value.bottom {
+  font-size: 19px !important;
+}
+
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card .card-corner-tl .card-num,
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card .card-corner-tl .card-value,
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card .card-value.top {
+  font-size: 30px !important;
+}
+
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card .card-corner-br .card-num,
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card .card-corner-br .card-value,
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card .card-value.bottom {
+  font-size: 26px !important;
+}
+
+#game-board.active .table-center-trump .mini-card .card-center-icon,
+#game-board.active .bid-overlay-trump .mini-card.grimoire-card .card-center-icon {
+  font-size: 1.75rem !important;
+}
+
+#game-board.active .mystic-gear-ring {
+  inset: 3%;
+}
+
+#game-board.active .mystic-rune-ring {
+  inset: 12%;
+}
+
+#game-board.active .table-seat {
+  min-width: 92px;
+  max-width: 110px;
+  padding: 5px 10px;
+}
+
+#game-board.active .game-hand-footer {
+  flex-shrink: 0;
+  max-height: min(19.5vh, 168px);
+  margin-top: -4px;
+}
+
+@media (max-height: 780px) {
+  #game-board.active .table-felt-wrap {
+    --table-size: min(100cqw, 540px, max(48vh, 100cqh, 44vmin));
+  }
+
+  #game-board.active .table-seats-layer {
+    inset: -48px;
+  }
+
+  #game-board.active .game-hand-footer {
+    max-height: min(18vh, 158px);
+    margin-top: -2px;
+  }
+}
+
+/* ─── Arcane card layers: dark face, accent glow only on symbols ─── */
+#game-board.active .grimoire-card::before {
+  background:
+    radial-gradient(circle at 24% 14%, rgba(255, 255, 255, 0.06), transparent 44%),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.02) 0%, transparent 42%) !important;
+  opacity: 1 !important;
+}
+
+#game-board.active .grimoire-card .card-art-layer {
+  opacity: 0.22 !important;
+  mix-blend-mode: screen !important;
+}
+
+#game-board.active .grimoire-card .card-inner-border {
+  border-color: rgba(201, 168, 76, 0.18) !important;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.35) !important;
+}
+
+#game-board.active .grimoire-card .corner-ornament {
+  border-color: rgba(201, 168, 76, 0.55) !important;
+  opacity: 0.85;
+}
+
+#game-board.active .grimoire-card.suit-blue .card-filigree-frame,
+#game-board.active .grimoire-card.suit-water .card-filigree-frame {
+  border-width: 2px !important;
+  border-color: rgba(55, 140, 255, 0.45) !important;
+  box-shadow: inset 0 0 12px rgba(40, 120, 220, 0.08), 0 0 6px rgba(55, 140, 255, 0.12) !important;
+}
+
+#game-board.active .grimoire-card.suit-green .card-filigree-frame,
+#game-board.active .grimoire-card.suit-nature .card-filigree-frame {
+  border-width: 2px !important;
+  border-color: rgba(60, 175, 95, 0.45) !important;
+  box-shadow: inset 0 0 12px rgba(50, 160, 80, 0.08), 0 0 6px rgba(60, 175, 95, 0.12) !important;
+}
+
+#game-board.active .grimoire-card.suit-red .card-filigree-frame,
+#game-board.active .grimoire-card.suit-fire .card-filigree-frame {
+  border-width: 2px !important;
+  border-color: rgba(230, 85, 55, 0.48) !important;
+  box-shadow: inset 0 0 12px rgba(220, 70, 45, 0.08), 0 0 6px rgba(230, 85, 55, 0.12) !important;
+}
+
+#game-board.active .grimoire-card.suit-yellow .card-filigree-frame,
+#game-board.active .grimoire-card.suit-light .card-filigree-frame {
+  border-width: 2px !important;
+  border-color: rgba(255, 185, 55, 0.48) !important;
+  box-shadow: inset 0 0 12px rgba(240, 170, 40, 0.08), 0 0 6px rgba(255, 185, 55, 0.12) !important;
+}
+
+#game-board.active .grimoire-card.suit-purple .card-filigree-frame,
+#game-board.active .grimoire-card.suit-indigo .card-filigree-frame,
+#game-board.active .grimoire-card.suit-arcane .card-filigree-frame {
+  border-width: 2px !important;
+  border-color: rgba(170, 100, 230, 0.45) !important;
+  box-shadow: inset 0 0 12px rgba(150, 80, 210, 0.08), 0 0 6px rgba(170, 100, 230, 0.12) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.card-val-1,
+#game-board.active .played-card-slot .card-unit.grimoire-card.card-val-1,
+#game-board.active .mini-card.grimoire-card.card-val-1 {
+  filter: none !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.card-val-1::after,
+#game-board.active .played-card-slot .card-unit.grimoire-card.card-val-1::after {
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.04) 0%, rgba(0, 0, 0, 0.28) 100%) !important;
+}
+
+#game-board.active .grimoire-card.wild-wizard,
+#game-board.active .mini-card.grimoire-card.wild-wizard {
+  filter: none !important;
+}
+
+#game-board.active .grimoire-card.wild-one,
+#game-board.active .mini-card.grimoire-card.wild-one {
+  filter: none !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.grimoire-card.hand-card-hovered,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.playable-card:hover,
+#game-board.active .hand-cards-row .card-unit.grimoire-card.playable:hover {
+  filter: none !important;
+}

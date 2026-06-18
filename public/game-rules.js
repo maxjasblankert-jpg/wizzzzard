@@ -36,8 +36,7 @@
           items: [
             'Each round one card is <strong>flipped</strong> from the undealt pile.',
             'Colored card flipped → that suit is trump.',
-            '<strong>Wizard (15)</strong> flipped → dealer picks trump from the suit they hold most.',
-            '<strong>Jester (1)</strong> flipped → <strong>no trump</strong> this round.'
+            '<strong>Wizard (15)</strong> or <strong>Jester (1)</strong> flipped → <strong>no trump</strong> this round.'
           ]
         },
         {

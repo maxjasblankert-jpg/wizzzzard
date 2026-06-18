@@ -226,9 +226,21 @@
   flex-shrink: 0;
 }
 
+#game-board.active .player-stat-value.score-positive {
+  color: var(--game-success, #3dd4ad);
+}
+
+#game-board.active .player-stat-value.score-negative {
+  color: var(--game-danger, #e74c3c);
+}
+
 #game-board.active .player-stat {
   text-align: center;
-  min-width: 28px;
+  min-width: 24px;
+}
+
+#game-board.active .player-stats {
+  gap: 8px;
 }
 
 #game-board.active .player-stat-value {
@@ -275,6 +287,7 @@
   border: 0.5px solid var(--game-border-subtle);
   border-radius: 8px;
   max-height: none;
+  overflow: visible;
 }
 
 #game-board.active .scoreboard-table {
@@ -584,18 +597,97 @@
 
 #game-board.active .mystic-trump-banner,
 #game-board.active .table-center-trump {
-  background: radial-gradient(ellipse at center, rgba(15, 35, 15, 0.5) 0%, transparent 75%);
-  border: 0.5px solid rgba(255, 200, 80, 0.1);
+  background: radial-gradient(ellipse at center, rgba(255, 200, 80, 0.08) 0%, transparent 75%);
+  border: 0.5px solid rgba(255, 200, 80, 0.15);
   border-radius: 50%;
   padding: 8px;
+}
+
+/* Trump mini-card — bright suit colors like deck cards */
+#game-board.active .table-center-trump .mini-card.trump-card-display,
+#game-board.active .job-card-box .mini-card.trump-card-display,
+#game-board.active .bid-overlay-trump .mini-card.trump-card-display {
+  border-width: 2px !important;
+  filter: saturate(1.15);
+}
+
+#game-board.active .table-center-trump .mini-card.trump-card-display .card-vignette,
+#game-board.active .job-card-box .mini-card.trump-card-display .card-vignette,
+#game-board.active .bid-overlay-trump .mini-card.trump-card-display .card-vignette {
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.12);
+}
+
+#game-board.active .table-center-trump .mini-card.suit-red.trump-card-display,
+#game-board.active .table-center-trump .mini-card.suit-fire.trump-card-display,
+#game-board.active .job-card-box .mini-card.suit-red.trump-card-display,
+#game-board.active .job-card-box .mini-card.suit-fire.trump-card-display,
+#game-board.active .bid-overlay-trump .mini-card.suit-red.trump-card-display {
+  background: linear-gradient(145deg, #2a0a08 0%, #c0392b 42%, #e74c3c 100%) !important;
+  border-color: rgba(231, 76, 60, 0.85) !important;
+}
+
+#game-board.active .table-center-trump .mini-card.suit-blue.trump-card-display,
+#game-board.active .table-center-trump .mini-card.suit-water.trump-card-display,
+#game-board.active .job-card-box .mini-card.suit-blue.trump-card-display,
+#game-board.active .job-card-box .mini-card.suit-water.trump-card-display,
+#game-board.active .bid-overlay-trump .mini-card.suit-blue.trump-card-display {
+  background: linear-gradient(145deg, #0a1628 0%, #1e5fad 42%, #3498db 100%) !important;
+  border-color: rgba(52, 152, 219, 0.85) !important;
+}
+
+#game-board.active .table-center-trump .mini-card.suit-green.trump-card-display,
+#game-board.active .table-center-trump .mini-card.suit-nature.trump-card-display,
+#game-board.active .job-card-box .mini-card.suit-green.trump-card-display,
+#game-board.active .job-card-box .mini-card.suit-nature.trump-card-display,
+#game-board.active .bid-overlay-trump .mini-card.suit-green.trump-card-display {
+  background: linear-gradient(145deg, #0a2012 0%, #2d8a4e 42%, #3ecf6e 100%) !important;
+  border-color: rgba(62, 207, 110, 0.85) !important;
+}
+
+#game-board.active .table-center-trump .mini-card.suit-yellow.trump-card-display,
+#game-board.active .table-center-trump .mini-card.suit-light.trump-card-display,
+#game-board.active .job-card-box .mini-card.suit-yellow.trump-card-display,
+#game-board.active .job-card-box .mini-card.suit-light.trump-card-display,
+#game-board.active .bid-overlay-trump .mini-card.suit-yellow.trump-card-display {
+  background: linear-gradient(145deg, #2a1f08 0%, #d4a017 42%, #f1c40f 100%) !important;
+  border-color: rgba(241, 196, 15, 0.85) !important;
+}
+
+#game-board.active .table-center-trump .mini-card.suit-purple.trump-card-display,
+#game-board.active .table-center-trump .mini-card.suit-arcane.trump-card-display,
+#game-board.active .job-card-box .mini-card.suit-purple.trump-card-display,
+#game-board.active .job-card-box .mini-card.suit-arcane.trump-card-display,
+#game-board.active .bid-overlay-trump .mini-card.suit-purple.trump-card-display {
+  background: linear-gradient(145deg, #180820 0%, #7b2d8b 42%, #a855c8 100%) !important;
+  border-color: rgba(168, 85, 200, 0.85) !important;
+}
+
+#game-board.active .table-center-trump .mini-card.suit-wizard.trump-card-display,
+#game-board.active .job-card-box .mini-card.suit-wizard.trump-card-display {
+  background: linear-gradient(145deg, #1a1030 0%, #6b3fa8 45%, #b388ff 100%) !important;
+  border-color: rgba(179, 136, 255, 0.9) !important;
+}
+
+#game-board.active .mini-card.no-trump-display {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+}
+
+#game-board.active .table-center-trump .mini-card.suit-jester.trump-card-display,
+#game-board.active .job-card-box .mini-card.suit-jester.trump-card-display {
+  background: linear-gradient(145deg, #1a1010 0%, #4a4a4a 45%, #8a8a8a 100%) !important;
+  border-color: rgba(200, 200, 200, 0.6) !important;
 }
 
 /* ─── Bid panel ─── */
 #game-board.active .bid-panel-top-inner,
 #game-board.active .bid-panel-controls {
-  background: rgba(255, 200, 80, 0.06);
-  border: 0.5px solid rgba(255, 200, 80, 0.25);
-  border-radius: 12px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
 }
 
 #game-board.active .bid-overlay-title {
@@ -669,44 +761,38 @@
   border-radius: 0 0 12px 12px;
 }
 
-/* ─── Playing cards — suit themes ─── */
+/* ─── Playing cards — suit themes (hand/table cards; trump mini-cards use styles.css) ─── */
 .game-card.suit-fire,
-.mini-card.suit-fire,
 .card-unit.suit-fire {
   background: linear-gradient(150deg, #1a0505, #260808) !important;
   border: 1.5px solid rgba(196, 68, 68, 0.6) !important;
 }
 
 .game-card.suit-water,
-.mini-card.suit-water,
 .card-unit.suit-water {
   background: linear-gradient(150deg, #030e1c, #05122a) !important;
   border: 1.5px solid rgba(55, 130, 255, 0.55) !important;
 }
 
 .game-card.suit-nature,
-.mini-card.suit-nature,
 .card-unit.suit-nature {
   background: linear-gradient(150deg, #021005, #041a08) !important;
   border: 1.5px solid rgba(50, 160, 80, 0.55) !important;
 }
 
 .game-card.suit-light,
-.mini-card.suit-light,
 .card-unit.suit-light {
   background: linear-gradient(150deg, #151008, #201808) !important;
   border: 1.5px solid rgba(200, 160, 50, 0.55) !important;
 }
 
 .game-card.suit-arcane,
-.mini-card.suit-arcane,
 .card-unit.suit-arcane {
   background: linear-gradient(150deg, #0d0518, #180a26) !important;
   border: 1.5px solid rgba(150, 70, 230, 0.55) !important;
 }
 
 .game-card.suit-wizard,
-.mini-card.suit-wizard,
 .card-unit.suit-wizard {
   background: linear-gradient(150deg, #0a0818, #120e28) !important;
   border: 1.5px solid rgba(200, 160, 255, 0.7) !important;
@@ -714,7 +800,6 @@
 }
 
 .game-card.suit-jester,
-.mini-card.suit-jester,
 .card-unit.suit-jester {
   background: linear-gradient(150deg, #100808, #1a1010) !important;
   border: 1.5px solid rgba(200, 200, 200, 0.25) !important;
@@ -756,7 +841,7 @@
   position: absolute;
   top: 7px;
   left: 9px;
-  z-index: 3;
+  z-index: 10;
 }
 
 #game-board.active .card-corner-br,
@@ -764,7 +849,7 @@
   position: absolute;
   bottom: 7px;
   right: 9px;
-  z-index: 3;
+  z-index: 10;
   transform: none;
 }
 
@@ -773,7 +858,7 @@
 #game-board.active .card-corner-tl .card-value,
 #game-board.active .mini-card .card-corner-tl .card-num,
 #game-board.active .mini-card .card-value.top {
-  font-size: 28px !important;
+  font-size: 32px !important;
   font-weight: 800 !important;
   line-height: 1;
   display: block;
@@ -786,7 +871,7 @@
 #game-board.active .mini-card .card-value.bottom,
 #game-board.active .played-card-slot .card-unit .card-corner-br .card-num,
 #game-board.active .played-card-slot .card-unit .card-corner-br .card-value {
-  font-size: 22px !important;
+  font-size: 26px !important;
   font-weight: 800 !important;
   line-height: 1;
   display: block;
@@ -810,7 +895,7 @@
 #game-board.active .card-unit.suit-jester .card-value.top,
 #game-board.active .card-unit.suit-wizard .card-corner-tl .card-num,
 #game-board.active .card-unit.suit-jester .card-corner-tl .card-num {
-  font-size: 34px !important;
+  font-size: 38px !important;
   font-weight: 900 !important;
 }
 
@@ -818,23 +903,107 @@
 #game-board.active .mini-card .card-corner-tl { top: 5px; left: 6px; }
 #game-board.active .mini-card .card-corner-br { bottom: 5px; right: 6px; }
 #game-board.active .mini-card .card-corner-tl .card-num,
-#game-board.active .mini-card .card-value.top { font-size: 20px !important; }
+#game-board.active .mini-card .card-value.top { font-size: 23px !important; }
 #game-board.active .mini-card .card-corner-br .card-num,
-#game-board.active .mini-card .card-value.bottom { font-size: 16px !important; }
+#game-board.active .mini-card .card-value.bottom { font-size: 19px !important; }
 #game-board.active .mini-card .card-center-icon { font-size: 24px !important; }
 
-#game-board.active .played-card-slot .card-unit .card-corner-tl { top: 5px; left: 6px; }
-#game-board.active .played-card-slot .card-unit .card-corner-br { bottom: 5px; right: 6px; }
+#game-board.active .played-card-slot .card-unit .card-corner-tl { top: 4px; left: 5px; }
+#game-board.active .played-card-slot .card-unit .card-corner-br { bottom: 4px; right: 5px; }
+
 #game-board.active .played-card-slot .card-unit .card-corner-tl .card-num,
-#game-board.active .played-card-slot .card-unit .card-value.top { font-size: 22px !important; }
+#game-board.active .played-card-slot .card-unit .card-corner-tl .card-value,
+#game-board.active .played-card-slot .card-unit .card-value.top {
+  font-size: 30px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  color: #fff8e8 !important;
+  text-shadow:
+    0 0 4px rgba(0, 0, 0, 1),
+    0 1px 6px rgba(0, 0, 0, 0.95),
+    0 2px 10px rgba(0, 0, 0, 0.85) !important;
+  -webkit-text-stroke: 0.4px rgba(0, 0, 0, 0.55);
+}
+
 #game-board.active .played-card-slot .card-unit .card-corner-br .card-num,
-#game-board.active .played-card-slot .card-unit .card-value.bottom { font-size: 18px !important; }
-#game-board.active .played-card-slot .card-unit .card-center-icon { font-size: 26px !important; }
+#game-board.active .played-card-slot .card-unit .card-corner-br .card-value,
+#game-board.active .played-card-slot .card-unit .card-value.bottom {
+  font-size: 26px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  color: #fff8e8 !important;
+  text-shadow:
+    0 0 4px rgba(0, 0, 0, 1),
+    0 1px 6px rgba(0, 0, 0, 0.95),
+    0 2px 10px rgba(0, 0, 0, 0.85) !important;
+  -webkit-text-stroke: 0.4px rgba(0, 0, 0, 0.55);
+  transform: rotate(180deg) !important;
+}
+
+#game-board.active .played-card-slot .card-unit.suit-fire .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.suit-red .card-corner .card-num { color: #ffc8c8 !important; }
+#game-board.active .played-card-slot .card-unit.suit-water .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.suit-blue .card-corner .card-num { color: #b8d8ff !important; }
+#game-board.active .played-card-slot .card-unit.suit-nature .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.suit-green .card-corner .card-num { color: #b8f0c8 !important; }
+#game-board.active .played-card-slot .card-unit.suit-light .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.suit-yellow .card-corner .card-num { color: #ffe8a0 !important; }
+#game-board.active .played-card-slot .card-unit.suit-arcane .card-corner .card-num,
+#game-board.active .played-card-slot .card-unit.suit-purple .card-corner .card-num { color: #e8c8ff !important; }
+#game-board.active .played-card-slot .card-unit.suit-wizard .card-corner-tl .card-num,
+#game-board.active .played-card-slot .card-unit.suit-wizard .card-value.top { font-size: 34px !important; color: #e8c8ff !important; }
+#game-board.active .played-card-slot .card-unit.suit-jester .card-corner-tl .card-num,
+#game-board.active .played-card-slot .card-unit.suit-jester .card-value.top { font-size: 34px !important; color: #f0f0f0 !important; }
+
+#game-board.active .played-card-slot .card-unit .card-center-icon { font-size: 28px !important; }
+
+#game-board.active .trick-cards-grid.players-5 .played-card-slot .card-unit .card-corner-tl .card-num,
+#game-board.active .trick-cards-grid.players-5 .played-card-slot .card-unit .card-value.top { font-size: 26px !important; }
+#game-board.active .trick-cards-grid.players-5 .played-card-slot .card-unit .card-corner-br .card-num,
+#game-board.active .trick-cards-grid.players-5 .played-card-slot .card-unit .card-value.bottom { font-size: 22px !important; }
+
+#game-board.active .trick-cards-grid.players-6 .played-card-slot .card-unit .card-corner-tl .card-num,
+#game-board.active .trick-cards-grid.players-6 .played-card-slot .card-unit .card-value.top { font-size: 23px !important; }
+#game-board.active .trick-cards-grid.players-6 .played-card-slot .card-unit .card-corner-br .card-num,
+#game-board.active .trick-cards-grid.players-6 .played-card-slot .card-unit .card-value.bottom { font-size: 20px !important; }
 
 #game-board.active .played-card-slot .card-unit {
-  width: 66px;
-  height: 96px;
+  width: 72px;
+  height: 104px;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+}
+
+/* Hand cards — scale type with hand card size (slightly larger than table cards) */
+#game-board.active .hand-cards-row .card-unit .card-corner-tl {
+  top: calc(var(--hand-card-width, var(--card-width)) * 0.1);
+  left: calc(var(--hand-card-width, var(--card-width)) * 0.125);
+}
+
+#game-board.active .hand-cards-row .card-unit .card-corner-br {
+  bottom: calc(var(--hand-card-width, var(--card-width)) * 0.1);
+  right: calc(var(--hand-card-width, var(--card-width)) * 0.125);
+}
+
+#game-board.active .hand-cards-row .card-unit .card-corner-tl .card-num,
+#game-board.active .hand-cards-row .card-unit .card-corner-tl .card-value {
+  font-size: calc(var(--hand-card-width, var(--card-width)) * 0.44) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit .card-corner-br .card-num,
+#game-board.active .hand-cards-row .card-unit .card-corner-br .card-value {
+  font-size: calc(var(--hand-card-width, var(--card-width)) * 0.36) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit .card-center-icon,
+#game-board.active .hand-cards-row .card-unit .card-suit-emoji {
+  font-size: calc(var(--hand-card-width, var(--card-width)) * 0.44) !important;
+}
+
+#game-board.active .hand-cards-row .card-unit.suit-wizard .card-corner-tl .card-num,
+#game-board.active .hand-cards-row .card-unit.suit-jester .card-corner-tl .card-num,
+#game-board.active .hand-cards-row .card-unit.suit-wizard .card-value.top,
+#game-board.active .hand-cards-row .card-unit.suit-jester .card-value.top {
+  font-size: calc(var(--hand-card-width, var(--card-width)) * 0.52) !important;
 }
 
 #game-board.active .card-unit.playable-card:hover,

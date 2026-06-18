@@ -438,9 +438,7 @@ class WizardSimulator:
             trump_card = int(self.deck[idx])
             self.seen[trump_card] = True  # the flipped card is public information
             self.trump_card = trump_card
-            if is_wizard(trump_card):
-                self.trump = self._dealer_choose_trump()  # dealer names a suit
-            elif is_jester(trump_card):
+            if is_wizard(trump_card) or is_jester(trump_card):
                 self.trump = -1                            # explicit no-trump round
             else:
                 self.trump = card_suit(trump_card)

@@ -758,8 +758,8 @@ input:checked + .switch-slider::before {
 }
 
 .host-end-game-section {
-  margin-top: auto;
-  padding-top: 4px;
+  flex-shrink: 0;
+  padding-top: 10px;
 }
 
 .host-end-game-note {
@@ -1229,8 +1229,9 @@ input:checked + .switch-slider::before {
   min-height: 0;
   column-gap: 8px;
   row-gap: 0;
-  --card-width: 72px;
-  --card-height: 104px;
+  --card-width: 86px;
+  --card-height: 123px;
+  --hand-hover-lift: 20px;
 }
 
 #game-board.active .sidebar-panel {
@@ -1251,6 +1252,7 @@ input:checked + .switch-slider::before {
   padding: 6px 8px 0;
   gap: 4px;
   min-height: 0;
+  overflow: hidden;
   border-bottom: none;
   border-radius: 12px 12px 0 0;
 }
@@ -1258,11 +1260,14 @@ input:checked + .switch-slider::before {
 #game-board.active .game-hand-footer {
   grid-row: 2;
   grid-column: 2;
-  height: calc(var(--card-height) + 10px);
-  min-height: calc(var(--card-height) + 10px);
-  max-height: calc(var(--card-height) + 18px);
+  height: calc(var(--hand-card-height, var(--card-height)) + 12px);
+  min-height: calc(var(--hand-card-height, var(--card-height)) + 12px);
+  max-height: min(19.5vh, 168px);
   flex: none;
-  margin-top: 0;
+  margin-top: -4px;
+  position: relative;
+  z-index: 24;
+  width: 100%;
 }
 
 #game-board.active .my-hand-panel {
@@ -1275,30 +1280,37 @@ input:checked + .switch-slider::before {
   border-radius: 0 0 12px 12px;
   box-shadow: none;
   color: var(--text-on-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 #game-board.active .sidebar-panel .players-stats-container {
   flex: 0 0 auto;
   min-height: 0;
+  max-height: none;
   overflow: visible;
   gap: 6px;
 }
 
 #game-board.active .sidebar-panel .scoreboard-section {
-  flex: 1 1 0;
+  flex: 0 0 auto;
   min-height: 0;
   max-height: none;
   margin-top: 0;
   padding-top: 0;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
 }
 
 #game-board.active .sidebar-panel .scoreboard-scroll {
-  flex: 1 1 0;
+  flex: 0 0 auto;
   min-height: 0;
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 #game-board.active .sidebar-panel .panel-title {
@@ -1334,8 +1346,9 @@ input:checked + .switch-slider::before {
 
 #game-board.active #host-end-game-section {
   flex-shrink: 0;
-  margin-top: auto;
-  padding-top: 8px;
+  margin-top: 0;
+  padding-top: 10px;
+  width: 100%;
 }
 
 #game-board.active .action-banner-box {
@@ -1353,7 +1366,9 @@ input:checked + .switch-slider::before {
 
 #game-board.active .card-table-container {
   flex: 1 1 0;
-  min-height: 0;
+  min-height: min(46vh, 400px);
+  padding-bottom: 10px;
+  box-sizing: border-box;
   container-type: size;
   container-name: play-table;
   overflow: visible;
@@ -1363,13 +1378,18 @@ input:checked + .switch-slider::before {
   padding: 0;
   width: 100%;
   height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: radial-gradient(ellipse at center, #141418 0%, #0D0D12 52%, #060608 100%);
 }
 
 #game-board.active .table-felt-wrap {
-  --table-size: min(100cqw, 100cqh);
+  --table-size: min(100cqw, 560px, max(50vh, 100cqh, 46vmin));
   width: var(--table-size);
   height: var(--table-size);
+  flex-shrink: 0;
 }
 
 #game-board.active .table-seats-layer {
@@ -1389,6 +1409,7 @@ input:checked + .switch-slider::before {
   height: 100%;
   min-height: 0;
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -1417,6 +1438,8 @@ input:checked + .switch-slider::before {
 }
 
 #game-board.active .hand-cards-row .card-unit {
+  width: var(--hand-card-width, var(--card-width));
+  height: var(--hand-card-height, var(--card-height));
   margin: 0 calc(-1 * var(--hand-overlap, 6px));
   transform: rotate(var(--fan-rot, 0deg)) translateY(var(--fan-y, 0px));
   transition: box-shadow 0.12s ease, border-color 0.12s ease, filter 0.12s ease;
@@ -1424,7 +1447,7 @@ input:checked + .switch-slider::before {
 }
 
 #game-board.active .hand-cards-row .card-unit.hand-card-hovered {
-  transform: rotate(var(--fan-rot, 0deg)) translateY(calc(var(--fan-y, 0px) - 18px)) scale(1.05);
+  transform: rotate(var(--fan-rot, 0deg)) translateY(calc(var(--fan-y, 0px) - var(--hand-hover-lift, 20px))) scale(1.05);
   z-index: 100 !important;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
   border-color: var(--gold);
@@ -1450,21 +1473,21 @@ input:checked + .switch-slider::before {
 
 #game-board.active .dashboard-overlay.bid-panel-top {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 10px;
+  left: 50%;
+  right: auto;
   z-index: 30;
-  width: 100%;
+  width: calc(100% - 20px);
+  max-width: 440px;
   height: auto;
   min-height: 0;
   max-height: none;
-  transform: none;
+  transform: translateX(-50%);
   overflow: visible;
-  padding: 14px 20px 18px;
+  padding: 18px 22px;
   gap: 0;
-  border-radius: 10px 10px 0 0;
-  border: 1.5px solid var(--gold);
-  border-bottom: 1px solid rgba(201, 168, 76, 0.35);
+  border-radius: 12px;
+  border: 1.5px solid rgba(201, 168, 76, 0.55);
   display: block;
   background: rgba(10, 22, 40, 0.98) !important;
   box-shadow: 0 10px 36px rgba(0, 0, 0, 0.55);
@@ -1473,22 +1496,20 @@ input:checked + .switch-slider::before {
 
 #game-board.active .bid-panel-top-inner {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  flex-wrap: wrap;
-  padding-bottom: 2px;
+  gap: 16px;
+  padding: 0;
 }
 
 #game-board.active .bid-panel-controls {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  flex: 1 1 240px;
-  min-width: 200px;
-  max-width: 420px;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
 }
 
 #game-board.active:has(#bid-selector-overlay:not(.hidden)) .card-table-container {
@@ -1502,8 +1523,14 @@ input:checked + .switch-slider::before {
 
 #game-board.active .bid-overlay-trump {
   flex-shrink: 0;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.28);
 }
 
 #game-board.active .bid-overlay-trump .table-trump-label {
@@ -1549,8 +1576,8 @@ input:checked + .switch-slider::before {
 
 #game-board.active .bid-confirm-btn {
   flex-shrink: 0;
-  margin-top: 2px;
-  margin-bottom: 2px;
+  margin-top: 4px;
+  margin-bottom: 0;
   width: 100%;
   max-width: 280px;
 }
@@ -1759,7 +1786,28 @@ input:checked + .switch-slider::before {
 .mini-card .card-label-bottom,
 .mini-card .card-illustration {
   position: absolute;
-  z-index: 2;
+}
+
+.mini-card .card-inner-border,
+.mini-card .card-art-layer,
+.mini-card .card-vignette,
+.mini-card .card-illustration {
+  z-index: 1;
+}
+
+.mini-card .card-filigree-frame,
+.mini-card .corner-ornament {
+  z-index: 3;
+}
+
+.mini-card .card-center-icon,
+.mini-card .card-suit-emoji {
+  z-index: 5;
+}
+
+.mini-card .card-corner-tl,
+.mini-card .card-corner-br {
+  z-index: 10;
 }
 
 .mini-card.empty {
@@ -1865,9 +1913,10 @@ input:checked + .switch-slider::before {
 }
 
 .sidebar-panel .players-stats-container {
-  flex: 1 1 auto;
-  min-height: 160px;
+  flex: 0 0 auto;
+  min-height: 0;
   max-height: none;
+  overflow: visible;
 }
 
 .sidebar-panel .scoreboard-section {
@@ -1877,7 +1926,8 @@ input:checked + .switch-slider::before {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 42%;
+  max-height: none;
+  overflow: visible;
 }
 
 .sidebar-panel .scoreboard-section .panel-title {
@@ -1908,6 +1958,13 @@ input:checked + .switch-slider::before {
   flex: 1;
   padding-right: 4px;
   min-height: 0;
+}
+
+#game-board.active .players-stats-container {
+  overflow: visible;
+  flex: 0 0 auto;
+  min-height: 0;
+  padding-right: 0;
 }
 
 /* ─── Player Stat Rows ─── */
@@ -2041,11 +2098,11 @@ input:checked + .switch-slider::before {
 /* ─── Scoreboard Grid ─── */
 .scoreboard-scroll {
   flex: 0 0 auto;
-  overflow-y: auto;
+  overflow: visible;
   border-radius: 8px;
   background: rgba(44, 36, 22, 0.04);
   border: 1px solid rgba(200, 170, 114, 0.25);
-  max-height: 150px;
+  max-height: none;
 }
 
 .scoreboard-table {
@@ -2454,8 +2511,11 @@ input:checked + .switch-slider::before {
 }
 
 .played-card-slot .card-unit .card-corner .card-num {
-  font-size: 1.15rem;
-  font-weight: 800;
+  font-size: 1.35rem;
+  font-weight: 900;
+  text-shadow:
+    0 0 3px rgba(0, 0, 0, 0.95),
+    0 1px 5px rgba(0, 0, 0, 0.85);
 }
 
 .played-card-slot .slot-player-name {
@@ -2912,11 +2972,32 @@ input:checked + .switch-slider::before {
 .card-inner-border,
 .card-art-layer,
 .card-vignette,
-.card-filigree-frame,
 .card-label-bottom,
 .card-illustration {
   position: absolute;
-  z-index: 2;
+}
+
+.card-inner-border,
+.card-art-layer,
+.card-vignette,
+.card-illustration {
+  z-index: 1;
+}
+
+.card-filigree-frame,
+.corner-ornament {
+  z-index: 3;
+}
+
+.card-center-icon,
+.card-suit-emoji {
+  z-index: 5;
+}
+
+.card-corner-tl,
+.card-corner-br,
+.card-corner {
+  z-index: 10;
 }
 
 .card-unit.suit-green {
@@ -3601,7 +3682,7 @@ input:checked + .switch-slider::before {
   }
 
   #game-board.active .table-felt-wrap {
-    --table-size: min(100cqw, 100cqh);
+    --table-size: min(100cqw, 540px, max(48vh, 100cqh, 44vmin));
   }
 
   #game-board.active .table-seats-layer {
@@ -3609,9 +3690,10 @@ input:checked + .switch-slider::before {
   }
 
   #game-board.active .game-hand-footer {
-    height: calc(var(--card-height) + 10px);
-    min-height: calc(var(--card-height) + 10px);
-    max-height: calc(var(--card-height) + 10px);
+    height: calc(var(--hand-card-height, var(--card-height)) + 10px);
+    min-height: calc(var(--hand-card-height, var(--card-height)) + 10px);
+    max-height: min(18vh, 158px);
+    margin-top: -2px;
   }
 
   #game-board.active .bottom-console-grid {
