@@ -3495,8 +3495,142 @@ input:checked + .switch-slider::before {
 
 .calc-sidebar-tab-content,
 .summary-tab-content,
-.gameover-tab-content {
+.gameover-tab-content,
+.past-game-tab-content {
   animation: fadeIn var(--transition-fast);
+}
+
+.past-game-tab-content {
+  display: none;
+  width: 100%;
+}
+
+.past-game-tab-content.active {
+  display: block;
+}
+
+.past-game-modal {
+  max-width: 760px;
+  max-height: min(92vh, 900px);
+  overflow: hidden;
+  gap: 14px;
+}
+
+.past-game-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.past-game-modal-heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.past-game-modal .winners-title {
+  font-size: 1.45rem;
+  margin: 0 0 4px;
+}
+
+.past-game-subtitle {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-parchment-muted);
+  line-height: 1.45;
+}
+
+.modal-close-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--parchment-border);
+  border-radius: 8px;
+  background: rgba(44, 36, 22, 0.06);
+  color: var(--text-parchment-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.modal-close-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold-dark);
+  background: rgba(201, 168, 76, 0.1);
+}
+
+.past-game-tabs {
+  margin-bottom: 0;
+}
+
+.past-game-table-wrap {
+  max-height: min(48vh, 420px);
+  overflow: auto;
+}
+
+.past-game-rounds-table th,
+.past-game-rounds-table td,
+.past-game-accuracy-table th,
+.past-game-accuracy-table td {
+  font-size: 0.84rem;
+  padding: 8px 10px;
+  vertical-align: top;
+}
+
+.past-game-rounds-table th:not(:first-child),
+.past-game-rounds-table td:not(:first-child),
+.past-game-accuracy-table th:not(:first-child),
+.past-game-accuracy-table td:not(:first-child) {
+  text-align: right;
+}
+
+.past-game-change {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--text-parchment-muted);
+  margin-top: 2px;
+}
+
+.past-game-empty {
+  color: rgba(107, 90, 58, 0.45);
+}
+
+.past-game-chart-wrap {
+  position: relative;
+  width: 100%;
+  min-height: 280px;
+  height: min(42vh, 320px);
+}
+
+.past-game-accuracy-summary {
+  margin-bottom: 10px;
+}
+
+.past-game-accuracy-note {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--text-parchment-muted);
+  line-height: 1.45;
+}
+
+.past-game-accuracy-note strong {
+  color: var(--gold-dark);
+}
+
+
+#overlay-past-game .summary-table-wrapper {
+  margin: 0;
+}
+
+#overlay-past-game .positive {
+  color: var(--emerald);
+  font-weight: 600;
+}
+
+#overlay-past-game .negative {
+  color: var(--crimson);
+  font-weight: 600;
 }
 
 /* ─── Center Toast ─── */

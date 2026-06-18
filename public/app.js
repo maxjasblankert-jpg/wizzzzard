@@ -677,6 +677,81 @@ async function loadPastGamesList() {
   }
 }
 
+let pastGameViewPlayers = null;
+
+function computePlayerBidAccuracy(player) {
+  const rounds = (player.roundScores || []).filter(rs =>
+    rs && rs.bid != null && rs.won != null && !Number.isNaN(Number(rs.bid)) && !Number.isNaN(Number(rs.won))
+  );
+  if (rounds.length === 0) {
+    return { exact: 0, total: 0, pct: 0 };
+  }
+  const exact = rounds.filter(rs => Number(rs.bid) === Number(rs.won)).length;
+  return {
+    exact,
+    total: rounds.length,
+    pct: Math.round((exact / rounds.length) * 100)
+  };
+}
+
+function renderPastGameBidAccuracy(players) {
+  const summary = document.getElementById('past-game-accuracy-summary');
+  const body = document.getElementById('past-game-accuracy-body');
+  if (!summary || !body) return;
+
+  body.innerHTML = '';
+  const stats = (players || []).map(p => ({
+    player: p,
+    ...computePlayerBidAccuracy(p)
+  }));
+
+  if (stats.length === 0) {
+    summary.innerHTML = '<p class="past-game-accuracy-note">No round data available for bid accuracy.</p>';
+    return;
+  }
+
+  const best = [...stats].sort((a, b) => b.pct - a.pct || b.exact - a.exact)[0];
+  summary.innerHTML = `
+    <p class="past-game-accuracy-note">
+      Bid accuracy is the share of rounds where a player's bid matched tricks won exactly.
+      ${best.total > 0 ? `Best: <strong>${best.player.name}</strong> at ${best.pct}% (${best.exact}/${best.total}).` : ''}
+    </p>
+  `;
+
+  stats.forEach(({ player, exact, total, pct }) => {
+    const tr = document.createElement('tr');
+    const pctClass = pct >= 70 ? 'positive' : (pct < 40 ? 'negative' : '');
+    tr.innerHTML = `
+      <td>${player.name}</td>
+      <td>${total}</td>
+      <td>${exact}</td>
+      <td class="${pctClass}">${total > 0 ? `${pct}%` : '—'}</td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+function switchPastGameTab(tab) {
+  const tabs = ['rounds', 'chart', 'accuracy'];
+  tabs.forEach(name => {
+    const btn = document.getElementById(`btn-past-game-tab-${name}`);
+    const panel = document.getElementById(`past-game-tab-${name}`);
+    const active = name === tab;
+    if (btn) {
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-selected', active ? 'true' : 'false');
+    }
+    if (panel) {
+      panel.classList.toggle('active', active);
+      panel.style.display = active ? 'block' : 'none';
+    }
+  });
+
+  if (tab === 'chart' && pastGameViewPlayers) {
+    renderScoreProgressionChart('past-game-chart', pastGameViewPlayers);
+  }
+}
+
 async function openPastGame(gameId) {
   const game = await WizardFirebase.getPastGame(gameId);
   if (!game) {
@@ -692,35 +767,41 @@ async function openPastGame(gameId) {
   document.getElementById('past-game-subtitle').innerText =
     `${dateStr} · ${game.mode} mode · Winners: ${(game.winners || []).join(' & ')}`;
 
+  pastGameViewPlayers = game.players || [];
+
   const head = document.getElementById('past-game-table-head');
   const body = document.getElementById('past-game-table-body');
-  head.innerHTML = '<tr><th>Rnd</th>' + (game.players || []).map(p =>
-    `<th style="text-align:right;padding:6px 8px;">${p.name}</th>`
+  head.innerHTML = '<tr><th>Rnd</th>' + pastGameViewPlayers.map(p =>
+    `<th>${p.name}</th>`
   ).join('') + '</tr>';
   body.innerHTML = '';
 
   const maxRound = game.maxRounds || 1;
   for (let r = 1; r <= maxRound; r++) {
     const tr = document.createElement('tr');
-    let cells = `<td style="padding:6px 8px;">${r}</td>`;
-    (game.players || []).forEach(p => {
+    let cells = `<td>${r}</td>`;
+    pastGameViewPlayers.forEach(p => {
       const rs = (p.roundScores || []).find(x => x.round === r);
       if (rs) {
-        cells += `<td style="text-align:right;padding:6px 8px;">${rs.bid}/${rs.won} (${rs.change >= 0 ? '+' : ''}${rs.change})</td>`;
+        const changeClass = rs.change >= 0 ? 'positive' : 'negative';
+        const exactMark = Number(rs.bid) === Number(rs.won) ? ' ✓' : '';
+        cells += `<td class="${changeClass}">${rs.bid}/${rs.won}${exactMark}<span class="past-game-change"> (${rs.change >= 0 ? '+' : ''}${rs.change})</span></td>`;
       } else {
-        cells += `<td style="text-align:right;padding:6px 8px;color:rgba(255,255,255,0.2);">—</td>`;
+        cells += `<td class="past-game-empty">—</td>`;
       }
     });
     tr.innerHTML = cells;
     body.appendChild(tr);
   }
 
-  renderScoreProgressionChart('past-game-chart', game.players || []);
+  renderPastGameBidAccuracy(pastGameViewPlayers);
+  switchPastGameTab('rounds');
   document.getElementById('overlay-past-game').classList.remove('hidden');
 }
 
 function closePastGameOverlay() {
   document.getElementById('overlay-past-game').classList.add('hidden');
+  pastGameViewPlayers = null;
   if (activeCharts['past-game-chart']) {
     activeCharts['past-game-chart'].destroy();
     delete activeCharts['past-game-chart'];
@@ -2026,7 +2107,9 @@ const activeCharts = {};
 function getChartTheme(canvasId) {
   const canvas = document.getElementById(canvasId);
   const onParchment = canvas?.closest('.modal-card, .parchment-card, .sidebar-panel, .glass-panel');
-  const highContrast = canvasId === 'multiplayer-summary-chart' || canvasId === 'multiplayer-gameover-chart';
+  const highContrast = canvasId === 'multiplayer-summary-chart'
+    || canvasId === 'multiplayer-gameover-chart'
+    || canvasId === 'past-game-chart';
   if (onParchment) {
     return {
       legendColor: highContrast ? '#1a1208' : '#1a1208',

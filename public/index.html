@@ -545,20 +545,54 @@
     </div>
 
     <!-- PAST GAME DETAIL OVERLAY -->
-    <div id="overlay-past-game" class="fullscreen-overlay hidden">
-      <div class="modal-card glass-panel" style="max-width: 720px; width: 100%;">
-        <h2 id="past-game-title" class="winners-title" style="font-size: 1.4rem; margin-bottom: 4px;">Room ABCD</h2>
-        <p id="past-game-subtitle" style="color: #b2bec3; font-size: 0.9rem; margin-bottom: 16px;"></p>
-        <div class="scoreboard-scroll" style="max-height: 280px; margin-bottom: 16px;">
-          <table class="scoreboard-table" style="width: 100%; font-size: 0.85rem;">
-            <thead id="past-game-table-head"></thead>
-            <tbody id="past-game-table-body"></tbody>
-          </table>
+    <div id="overlay-past-game" class="fullscreen-overlay hidden" role="dialog" aria-labelledby="past-game-title">
+      <div class="modal-card glass-panel past-game-modal">
+        <div class="past-game-modal-header">
+          <div class="past-game-modal-heading">
+            <h2 id="past-game-title" class="winners-title">Room ABCD</h2>
+            <p id="past-game-subtitle" class="past-game-subtitle"></p>
+          </div>
+          <button type="button" class="modal-close-btn" onclick="closePastGameOverlay()" aria-label="Close past game details">&times;</button>
         </div>
-        <div style="min-height: 220px; position: relative; width: 100%; margin-bottom: 16px;">
-          <canvas id="past-game-chart"></canvas>
+
+        <nav class="lobby-tabs past-game-tabs" role="tablist" aria-label="Past game views">
+          <button id="btn-past-game-tab-rounds" type="button" class="tab-btn past-game-tab-btn active" role="tab" aria-selected="true" onclick="switchPastGameTab('rounds')">Round Results</button>
+          <button id="btn-past-game-tab-chart" type="button" class="tab-btn past-game-tab-btn" role="tab" aria-selected="false" onclick="switchPastGameTab('chart')">Score Graph</button>
+          <button id="btn-past-game-tab-accuracy" type="button" class="tab-btn past-game-tab-btn" role="tab" aria-selected="false" onclick="switchPastGameTab('accuracy')">Bid Accuracy</button>
+        </nav>
+
+        <div id="past-game-tab-rounds" class="past-game-tab-content active">
+          <div class="past-game-table-wrap summary-table-wrapper">
+            <table class="summary-table past-game-rounds-table">
+              <thead id="past-game-table-head"></thead>
+              <tbody id="past-game-table-body"></tbody>
+            </table>
+          </div>
         </div>
-        <button class="btn btn-secondary btn-large" onclick="closePastGameOverlay()">Close</button>
+
+        <div id="past-game-tab-chart" class="past-game-tab-content">
+          <div class="past-game-chart-wrap">
+            <canvas id="past-game-chart"></canvas>
+          </div>
+        </div>
+
+        <div id="past-game-tab-accuracy" class="past-game-tab-content">
+          <div id="past-game-accuracy-summary" class="past-game-accuracy-summary"></div>
+          <div class="past-game-table-wrap summary-table-wrapper">
+            <table class="summary-table past-game-accuracy-table">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Rounds</th>
+                  <th>Exact Bids</th>
+                  <th>Accuracy</th>
+                </tr>
+              </thead>
+              <tbody id="past-game-accuracy-body"></tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
 
