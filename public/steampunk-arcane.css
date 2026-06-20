@@ -347,6 +347,8 @@
   border-right: none;
   box-shadow: none;
   border-radius: 0;
+  position: relative;
+  z-index: 35;
 }
 
 #game-board.active #action-banner-text,
@@ -1183,7 +1185,10 @@
 }
 
 #game-board.active .table-seats-layer {
-  inset: -56px;
+  top: -28px;
+  right: -52px;
+  bottom: -52px;
+  left: -52px;
   z-index: 20;
 }
 
@@ -1317,7 +1322,10 @@
   }
 
   #game-board.active .table-seats-layer {
-    inset: -48px;
+    top: -24px;
+    right: -44px;
+    bottom: -44px;
+    left: -44px;
   }
 
   #game-board.active .game-hand-footer {

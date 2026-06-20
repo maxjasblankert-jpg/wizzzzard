@@ -9,19 +9,31 @@
     const botType = room && global.GameEngine?.resolveBotType
       ? global.GameEngine.resolveBotType(player, room)
       : (player.botType || 'neural_v7');
-    return botType === 'neural_v6' || botType === 'neural_v7';
+    return botType === 'neural_v6' || botType === 'neural_v7' || botType === 'neural_v7_house';
   }
 
   function modelForBotType(botType) {
     if (botType === 'neural_v6') return 'v6';
+    if (botType === 'neural_v7_house') return 'v7_house';
     if (botType === 'neural_v7') return 'v7';
     return 'v7';
   }
 
   function neuralSetupValid(room, botType) {
-    if (!room || room.mode !== 'standard') return { ok: false, message: 'Champion bots require Standard (Official) mode.' };
-    if (room.hookRule) return { ok: false, message: 'Champion bots require Hook Rule off.' };
     const n = room.playerCount || room.players?.length || 0;
+    if (botType === 'neural_v7_house') {
+      if (!room || room.mode !== 'normal') {
+        return { ok: false, message: 'Champion v7 (HOME) requires HOME Rules mode.' };
+      }
+      if (n !== 3 && n !== 4) {
+        return { ok: false, message: 'Champion v7 (HOME) supports 3 or 4 players.' };
+      }
+      return { ok: true };
+    }
+    if (!room || room.mode !== 'standard') {
+      return { ok: false, message: 'Champion bots require Standard (Official) mode.' };
+    }
+    if (room.hookRule) return { ok: false, message: 'Champion bots require Hook Rule off.' };
     if (botType === 'neural_v6' && n !== 3) {
       return { ok: false, message: 'Champion v6 supports exactly 3 players.' };
     }
@@ -35,14 +47,56 @@
     return room.players.findIndex(p => p.id === playerId);
   }
 
-  function buildActPayload(room, handsById, playerId, phase) {
-    if (room.mode !== 'standard') {
-      throw new Error('neural bots require standard mode');
+  function resolveTrumpForPayload(room) {
+    if (room.mode === 'standard') {
+      return {
+        trump: room.trumpSuitIndex ?? -1,
+        trumpCard: IdMap().appCardIdToBotId(room.trumpCard?.id ?? -1)
+      };
     }
+    const job = room.jobCard;
+    if (!job || job.id == null) return { trump: -1, trumpCard: -1 };
+    const trump = (job.value >= 2 && job.value <= 14) ? job.suit : -1;
+    return {
+      trump,
+      trumpCard: IdMap().appCardIdToBotId(job.id)
+    };
+  }
+
+  function collectSeenForPayload(room, handsById) {
+    const rules = SR();
+    const seen = new Set(rules.collectSeenCardIds(room, handsById));
+    if (room.mode === 'normal' && room.jobCard?.id != null) {
+      seen.add(room.jobCard.id);
+    }
+    return [...seen];
+  }
+
+  function getLegalCardIdsForBot(room, hand) {
+    if (room.mode === 'standard') {
+      return IdMap().mapAppIds(
+        SR().getLegalCardIds(hand, room.currentTrick, room.trumpSuitIndex ?? -1)
+      );
+    }
+    const legal = hand.filter(c => Engine().canPlayCard(hand, c, room.currentTrick || [], room));
+    return IdMap().mapAppIds(legal.map(c => c.id));
+  }
+
+  function buildActPayload(room, handsById, playerId, phase) {
     const player = room.players.find(p => p.id === playerId);
+    const botType = global.GameEngine?.resolveBotType?.(player, room) || player?.botType || 'neural_v7';
+    if (botType === 'neural_v7_house') {
+      if (room.mode !== 'normal') {
+        throw new Error('Champion v7 (HOME) requires HOME Rules mode');
+      }
+    } else if (room.mode !== 'standard') {
+      throw new Error('Champion bots require Standard (Official) mode');
+    }
+
     const seat = seatIndex(room, playerId);
     const hand = handsById[playerId] || [];
     const rules = SR();
+    const trumpInfo = resolveTrumpForPayload(room);
 
     const bids = room.players.map(p => p.currentBid);
     const taken = room.players.map(p => p.tricksWon);
@@ -54,29 +108,27 @@
 
     const legalActions = phase === 'bid'
       ? rules.getLegalBidValues(room.currentRound)
-      : IdMap().mapAppIds(rules.getLegalCardIds(hand, room.currentTrick, room.trumpSuitIndex ?? -1));
+      : getLegalCardIdsForBot(room, hand);
 
     const handsPayload = {};
     handsPayload[String(seat)] = IdMap().mapAppIds(hand.map(c => c.id));
 
     return {
       protocol: 1,
-      model: modelForBotType(
-        (global.GameEngine?.resolveBotType?.(player, room) || player?.botType || 'neural_v7')
-      ),
+      model: modelForBotType(botType),
       num_players: room.playerCount,
       seat,
       phase,
       round: room.currentRound,
-      trump: room.trumpSuitIndex ?? -1,
-      trump_card: IdMap().appCardIdToBotId(room.trumpCard?.id ?? -1),
+      trump: trumpInfo.trump,
+      trump_card: trumpInfo.trumpCard,
       dealer: room.dealerIndex,
       starter: (room.dealerIndex + 1) % room.playerCount,
       hands: handsPayload,
       bids,
       taken,
       trick,
-      seen: IdMap().mapAppIds(rules.collectSeenCardIds(room, handsById)),
+      seen: IdMap().mapAppIds(collectSeenForPayload(room, handsById)),
       legal_actions: legalActions
     };
   }

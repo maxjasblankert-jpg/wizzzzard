@@ -1353,11 +1353,13 @@ input:checked + .switch-slider::before {
 
 #game-board.active .action-banner-box {
   padding: 4px 10px;
-  margin-bottom: 0;
+  margin-bottom: 4px;
   flex-shrink: 0;
   background: transparent;
   border: none;
   border-radius: 0;
+  position: relative;
+  z-index: 35;
 }
 
 #game-board.active #action-banner-text {
@@ -1393,7 +1395,10 @@ input:checked + .switch-slider::before {
 }
 
 #game-board.active .table-seats-layer {
-  inset: -56px;
+  top: -28px;
+  right: -52px;
+  bottom: -52px;
+  left: -52px;
 }
 
 #game-board.active .my-hand-panel::before,
@@ -3820,7 +3825,10 @@ input:checked + .switch-slider::before {
   }
 
   #game-board.active .table-seats-layer {
-    inset: -48px;
+    top: -24px;
+    right: -44px;
+    bottom: -44px;
+    left: -44px;
   }
 
   #game-board.active .game-hand-footer {

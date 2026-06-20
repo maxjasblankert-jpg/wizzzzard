@@ -345,9 +345,14 @@ function updateModeWarning() {
   }
 
   const isStandard = selectMode === 'standard';
+  const isNormal = selectMode === 'normal';
+  const neuralHintStandard = document.getElementById('neural-hint-standard');
+  const neuralHintHouse = document.getElementById('neural-hint-house');
   if (neuralHint) {
-    neuralHint.classList.toggle('hidden', !isStandard);
+    neuralHint.classList.toggle('hidden', !isStandard && !isNormal);
   }
+  if (neuralHintStandard) neuralHintStandard.classList.toggle('hidden', !isStandard);
+  if (neuralHintHouse) neuralHintHouse.classList.toggle('hidden', !isNormal);
 
   if (hookCheck) {
     if (isStandard) {
@@ -360,14 +365,17 @@ function updateModeWarning() {
 
   if (botTypeSelect) {
     [...botTypeSelect.options].forEach(opt => {
-      if (opt.value === 'neural_v6') {
+      if (opt.value === 'neural_v6' || opt.value === 'neural_v7') {
         opt.disabled = !isStandard;
-      } else if (opt.value === 'neural_v7') {
-        opt.disabled = !isStandard;
+      } else if (opt.value === 'neural_v7_house') {
+        opt.disabled = !isNormal;
       }
     });
-    if (!isStandard && botTypeSelect.value.startsWith('neural')) {
-      botTypeSelect.value = 'heuristic';
+    const val = botTypeSelect.value;
+    if ((val === 'neural_v6' || val === 'neural_v7') && !isStandard) {
+      botTypeSelect.value = isNormal ? 'neural_v7_house' : 'heuristic';
+    } else if (val === 'neural_v7_house' && !isNormal) {
+      botTypeSelect.value = isStandard ? 'neural_v7' : 'heuristic';
     }
   }
 }
@@ -1416,8 +1424,19 @@ function polarTableStyle(relativePos, nPlayers, radiusPercent) {
 }
 
 function getSeatStyle(relativePos, nPlayers) {
-  const radius = nPlayers <= 3 ? 64 : 58;
-  return polarTableStyle(relativePos, nPlayers, radius);
+  let radius = nPlayers <= 3 ? 62 : 56;
+  const angle = (Math.PI / 2) + (relativePos * 2 * Math.PI / nPlayers);
+  const sin = Math.sin(angle);
+  // Pull top-side seats inward so they do not overlap the action banner
+  if (sin < -0.2) radius -= 8;
+  if (sin < -0.75) radius -= 6;
+
+  const style = polarTableStyle(relativePos, nPlayers, radius);
+  if (sin < -0.45) {
+    const y = parseFloat(style.top);
+    style.top = `${Math.min(y + 10, 44)}%`;
+  }
+  return style;
 }
 
 function getCardStyle(relativePos, nPlayers) {

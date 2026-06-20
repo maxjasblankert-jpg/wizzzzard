@@ -26,6 +26,7 @@ from wizard_simulator import WizardSimulator
 ROOT = Path(__file__).resolve().parent
 V6_PATH = ROOT / "models" / "v6_final.pt"
 V7_PATH = ROOT / "models" / "v7_final.pt"
+V7_HOUSE_PATH = ROOT / "models" / "v7_house_final.pt"
 
 app = FastAPI(title="Wizard Neural Bot Service", version=2)
 app.add_middleware(
@@ -38,12 +39,13 @@ app.add_middleware(
 
 _v6_model: model_v6.ActorCritic | None = None
 _v7_model: model_v7.ActorCritic | None = None
+_v7_house_model: model_v7.ActorCritic | None = None
 
 
 class ActRequest(BaseModel):
     protocol: int = 1
     bot_id: str = "champion"
-    model: Literal["v6", "v7", "auto"] = "auto"
+    model: Literal["v6", "v7", "v7_house", "auto"] = "auto"
     num_players: int = Field(default=3, ge=3, le=4)
     seat: int = Field(ge=0, le=3)
     phase: str  # "bid" | "play"
@@ -68,12 +70,13 @@ class ActResponse(BaseModel):
     latency_ms: float
 
 
-def _resolve_model_id(req: ActRequest) -> Literal["v6", "v7"]:
+def _resolve_model_id(req: ActRequest) -> Literal["v6", "v7", "v7_house"]:
     if req.model == "v6":
         return "v6"
+    if req.model == "v7_house":
+        return "v7_house"
     if req.model == "v7":
         return "v7"
-    # auto: v7 for 4p; v7 also preferred at 3p (stronger), but honour explicit legacy v6 seats via model field
     if req.num_players == 4:
         return "v7"
     return "v7"
@@ -117,10 +120,35 @@ def _load_v7() -> model_v7.ActorCritic:
     return _v7_model
 
 
+def _load_v7_house() -> model_v7.ActorCritic:
+    global _v7_house_model
+    if _v7_house_model is not None:
+        return _v7_house_model
+    path = _checkpoint_path(
+        V7_HOUSE_PATH,
+        ROOT / "runs" / "v7_house" / "final.pt",
+    )
+    if not path.exists():
+        path = _checkpoint_path(V7_PATH, ROOT / "runs" / "v7" / "final.pt")
+    if not path.exists():
+        raise RuntimeError(f"No v7_house checkpoint at {V7_HOUSE_PATH}")
+    torch.set_num_threads(1)
+    net = model_v7.ActorCritic()
+    net.load_state_dict(torch.load(path, map_location="cpu", weights_only=True))
+    net.eval()
+    _v7_house_model = net
+    return _v7_house_model
+
+
 @app.on_event("startup")
 def startup() -> None:
     if V7_PATH.exists() or (ROOT / "runs" / "v7" / "final.pt").exists():
         _load_v7()
+    if V7_HOUSE_PATH.exists() or (ROOT / "runs" / "v7_house" / "final.pt").exists() or V7_PATH.exists():
+        try:
+            _load_v7_house()
+        except RuntimeError:
+            pass
     if V6_PATH.exists() or (ROOT / "runs" / "v6" / "final.pt").exists():
         _load_v6()
 
@@ -141,8 +169,9 @@ def health() -> dict[str, Any]:
         "models": {
             "v6": _v6_model is not None,
             "v7": _v7_model is not None,
+            "v7_house": _v7_house_model is not None,
         },
-        "players": {"v6": [3], "v7": [3, 4]},
+        "players": {"v6": [3], "v7": [3, 4], "v7_house": [3, 4]},
     }
 
 
@@ -233,6 +262,18 @@ def _act_v7(sim: WizardSimulator, seat: int, legal: list[int]) -> int:
     return action
 
 
+def _act_v7_house(sim: WizardSimulator, seat: int, legal: list[int]) -> int:
+    model = _load_v7_house()
+    obs, mask = obs_v7.build_actor_obs(sim, seat)
+    obs_t = torch.as_tensor(obs).unsqueeze(0)
+    mask_t = torch.as_tensor(mask).unsqueeze(0)
+    with torch.no_grad():
+        action = int(model.act_greedy(obs_t, mask_t).item())
+    if action not in legal and legal:
+        action = int(legal[0])
+    return action
+
+
 @app.post("/act", response_model=ActResponse)
 def act(req: ActRequest) -> ActResponse:
     if req.protocol != 1:
@@ -245,6 +286,8 @@ def act(req: ActRequest) -> ActResponse:
         raise HTTPException(400, "neural_v6 supports exactly 3 players")
     if model_id == "v7" and req.num_players not in (3, 4):
         raise HTTPException(400, "neural_v7 supports 3 or 4 players")
+    if model_id == "v7_house" and req.num_players not in (3, 4):
+        raise HTTPException(400, "neural_v7_house supports 3 or 4 players")
 
     t0 = time.perf_counter()
     sim, seat = _rebuild_sim(req)
@@ -253,6 +296,8 @@ def act(req: ActRequest) -> ActResponse:
     try:
         if model_id == "v6":
             action = _act_v6(sim, seat, legal)
+        elif model_id == "v7_house":
+            action = _act_v7_house(sim, seat, legal)
         else:
             action = _act_v7(sim, seat, legal)
     except RuntimeError as exc:

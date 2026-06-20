@@ -57,7 +57,8 @@
         {
           heading: 'Bots',
           items: [
-            'Champion bots (v6/v7) only work in <strong>Standard</strong> with Hook Rule off.',
+            'Champion v7 (Standard) and v6 only work in <strong>Standard</strong> with Hook Rule off.',
+            'Champion v7 (HOME) works in <strong>HOME Rules</strong>.',
             '3 players for v6; 3 or 4 players for v7.'
           ]
         }
@@ -101,7 +102,9 @@
           heading: 'Bots',
           items: [
             'Practice bots work in HOME Rules.',
-            'Champion ML bots require <strong>Standard</strong> mode.'
+            'Champion v7 (HOME) supports 3 or 4 players.',
+            'Champion v7 (Standard) and v6 require <strong>Standard</strong> mode.'
+          ]
           ]
         }
       ]

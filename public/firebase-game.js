@@ -904,7 +904,7 @@
       const order = roomDoc.playerIds.length;
       const updatedIds = [...roomDoc.playerIds, botId];
       const log = roomDoc.hostVoiceLog || [];
-      const label = botType === 'heuristic' ? 'Practice' : (botType === 'neural_v6' ? 'Champion v6' : 'Champion v7');
+      const label = Engine().botTypeLabel(botType);
       log.push({ timestamp: Date.now(), text: `${botName} (${label} AI) joined the lobby.` });
       if (updatedIds.length === roomDoc.playerCount) {
         log.push({ timestamp: Date.now(), text: 'Lobby is full! Host can now start the game.' });

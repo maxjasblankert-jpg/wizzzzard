@@ -74,8 +74,8 @@
         </div>
 
         <div id="neural-setup-hint" class="warning-text">
-          Champion bots need <strong>Standard (Official)</strong> mode and <strong>Hook Rule off</strong>.
-          v7: 3 or 4 players. v6: 3 players only. Requires the bot service running.
+          <span id="neural-hint-standard">Champion v7/v6 (Standard) need <strong>Standard (Official)</strong> mode and <strong>Hook Rule off</strong>. v7: 3 or 4 players. v6: 3 players only.</span>
+          <span id="neural-hint-house" class="hidden">Champion v7 (HOME) needs <strong>HOME Rules</strong> mode. Supports 3 or 4 players.</span>
         </div>
 
         <div id="purple-mode-warning" class="warning-text hidden">
@@ -224,8 +224,9 @@
         <div class="form-group">
           <label for="select-bot-type">Bot type</label>
           <select id="select-bot-type">
-            <option value="neural_v7" selected>Champion (v7)</option>
-            <option value="neural_v6">Champion (v6, 3p)</option>
+            <option value="neural_v7" selected>Champion v7 (Standard)</option>
+            <option value="neural_v7_house">Champion v7 (HOME)</option>
+            <option value="neural_v6">Champion v6 (3p, Standard)</option>
             <option value="heuristic">Practice Bot</option>
           </select>
         </div>

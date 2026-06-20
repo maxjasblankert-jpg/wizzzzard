@@ -203,8 +203,17 @@
   function resolveBotType(meta, room) {
     if (!meta?.isBot) return null;
     if (meta.botType === 'heuristic') return 'heuristic';
-    if (meta.botType === 'neural_v6' || meta.botType === 'neural_v7') return meta.botType;
+    if (meta.botType === 'neural_v6' || meta.botType === 'neural_v7' || meta.botType === 'neural_v7_house') {
+      return meta.botType;
+    }
     return isStandardMode(room?.mode) ? 'neural_v7' : 'heuristic';
+  }
+
+  function botTypeLabel(botType) {
+    if (botType === 'heuristic') return 'Practice';
+    if (botType === 'neural_v6') return 'Champion v6';
+    if (botType === 'neural_v7_house') return 'Champion v7 (HOME)';
+    return 'Champion v7';
   }
 
   function buildPlayersArray(room, handsById) {
@@ -651,6 +660,7 @@
     playBotCard,
     playBotBid,
     hydrateRoom,
-    resolveBotType
+    resolveBotType,
+    botTypeLabel
   };
 })(typeof window !== 'undefined' ? window : global);

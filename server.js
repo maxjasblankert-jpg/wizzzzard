@@ -361,7 +361,12 @@ wss.on('connection', (ws) => {
           }
 
           const botType = data.botType || 'neural_v7';
-          if (botType !== 'heuristic' && room.mode !== 'standard') {
+          if (botType === 'neural_v7_house') {
+            if (room.mode !== 'normal') {
+              ws.send(JSON.stringify({ type: 'error', message: 'Champion v7 (HOME) requires HOME Rules mode.' }));
+              return;
+            }
+          } else if (botType !== 'heuristic' && room.mode !== 'standard') {
             ws.send(JSON.stringify({ type: 'error', message: 'Champion bots require Standard mode.' }));
             return;
           }
