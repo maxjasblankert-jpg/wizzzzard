@@ -331,12 +331,31 @@ function switchLobbyTab(tab) {
   switchMainTab(tab);
 }
 
+function syncBotTypeSelect(mode) {
+  const botTypeSelect = document.getElementById('select-bot-type');
+  if (!botTypeSelect) return;
+
+  const isPurple = mode === 'purple';
+
+  [...botTypeSelect.options].forEach(opt => {
+    opt.disabled = false;
+    if (opt.value === 'neural_v7' || opt.value === 'neural_v7_house') {
+      opt.hidden = isPurple;
+    } else {
+      opt.hidden = false;
+    }
+  });
+
+  if (isPurple && botTypeSelect.value !== 'heuristic') {
+    botTypeSelect.value = 'heuristic';
+  }
+}
+
 function updateModeWarning() {
   const selectMode = document.getElementById('select-game-mode').value;
   const warning = document.getElementById('purple-mode-warning');
   const neuralHint = document.getElementById('neural-setup-hint');
   const hookCheck = document.getElementById('check-hook-rule');
-  const botTypeSelect = document.getElementById('select-bot-type');
 
   if (selectMode === 'purple') {
     warning.classList.remove('hidden');
@@ -363,20 +382,8 @@ function updateModeWarning() {
     }
   }
 
-  if (botTypeSelect) {
-    [...botTypeSelect.options].forEach(opt => {
-      if (opt.value === 'neural_v6' || opt.value === 'neural_v7') {
-        opt.disabled = !isStandard;
-      } else if (opt.value === 'neural_v7_house') {
-        opt.disabled = !isNormal;
-      }
-    });
-    const val = botTypeSelect.value;
-    if ((val === 'neural_v6' || val === 'neural_v7') && !isStandard) {
-      botTypeSelect.value = isNormal ? 'neural_v7_house' : 'heuristic';
-    } else if (val === 'neural_v7_house' && !isNormal) {
-      botTypeSelect.value = isStandard ? 'neural_v7' : 'heuristic';
-    }
+  if (!gameState || gameState.status !== 'lobby') {
+    syncBotTypeSelect(selectMode);
   }
 }
 
@@ -1118,6 +1125,8 @@ function renderWaitingLobby() {
   // Host button controls toggle
   const isHost = gameState.players[0].id === myPlayerId;
   const readyToStart = seated === maxPlayers;
+
+  syncBotTypeSelect(gameState.mode);
 
   if (isHost) {
     document.getElementById('host-controls').classList.remove('hidden');
