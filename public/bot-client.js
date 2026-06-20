@@ -133,18 +133,32 @@
     };
   }
 
-  async function callBotService(payload) {
+  async function callBotService(payload, timeoutMs = 8000) {
     const url = `${Config().serviceUrl.replace(/\/$/, '')}/act`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Bot service error (${res.status}): ${text}`);
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = controller
+      ? setTimeout(() => controller.abort(), timeoutMs)
+      : null;
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller?.signal
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Bot service error (${res.status}): ${text}`);
+      }
+      return res.json();
+    } catch (err) {
+      if (err?.name === 'AbortError') {
+        throw new Error(`Bot service timed out after ${timeoutMs}ms`);
+      }
+      throw err;
+    } finally {
+      if (timer) clearTimeout(timer);
     }
-    return res.json();
   }
 
   async function playNeuralBotBid(room, handsById, playerId) {

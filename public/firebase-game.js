@@ -521,6 +521,7 @@
     if (botActionInFlight) return;
 
     botActionInFlight = true;
+    let acted = false;
     try {
       await new Promise(resolve => setTimeout(resolve, 280));
 
@@ -534,7 +535,7 @@
       if (freshRoom.trickTransitionUntil) return;
 
       if (freshRoom.status === 'bidding') {
-        let bidVal;
+        let bidVal = Engine().playBotBid(freshRoom);
         if (global.BotClient && global.BotClient.isNeuralBot(activeNow, freshRoom)) {
           try {
             bidVal = await global.BotClient.playNeuralBotBid(freshRoom, freshHands, activeNow.id);
@@ -542,16 +543,26 @@
             console.warn('Neural bid failed, using heuristic:', err);
             bidVal = Engine().playBotBid(freshRoom);
           }
-        } else {
+        }
+        const legalBids = Engine().getLegalBotBids(freshRoom);
+        if (!legalBids.includes(bidVal)) {
           bidVal = Engine().playBotBid(freshRoom);
         }
-        const result = Engine().placeBid(freshRoom, activeNow.id, bidVal);
-        if (!result.ok) return;
+        let result = Engine().placeBid(freshRoom, activeNow.id, bidVal);
+        if (!result.ok) {
+          bidVal = Engine().playBotBid(freshRoom);
+          result = Engine().placeBid(freshRoom, activeNow.id, bidVal);
+        }
+        if (!result.ok) {
+          console.warn('Bot bid rejected:', result.message);
+          return;
+        }
         freshRoom.version = (freshRoom.version || 0) + 1;
         applyLocalRuntime(freshRoom);
         await persistBidFast(currentRoomCode, freshRoom, activeNow.id);
+        acted = true;
       } else if (freshRoom.status === 'play') {
-        let cardKey;
+        let cardKey = Engine().playBotCard(freshRoom, freshHands, activeNow);
         if (global.BotClient && global.BotClient.isNeuralBot(activeNow, freshRoom)) {
           try {
             cardKey = await global.BotClient.playNeuralBotCard(freshRoom, freshHands, activeNow.id);
@@ -559,21 +570,33 @@
             console.warn('Neural play failed, using heuristic:', err);
             cardKey = Engine().playBotCard(freshRoom, freshHands, activeNow);
           }
-        } else {
-          cardKey = Engine().playBotCard(freshRoom, freshHands, activeNow);
         }
         if (!cardKey) return;
-        const result = Engine().playCard(freshRoom, freshHands, activeNow.id, cardKey);
-        if (!result.ok) return;
+        let result = Engine().playCard(freshRoom, freshHands, activeNow.id, cardKey);
+        if (!result.ok) {
+          cardKey = Engine().playBotCard(freshRoom, freshHands, activeNow);
+          if (!cardKey) return;
+          result = Engine().playCard(freshRoom, freshHands, activeNow.id, cardKey);
+        }
+        if (!result.ok) {
+          console.warn('Bot play rejected:', result.message);
+          return;
+        }
         freshRoom.version = (freshRoom.version || 0) + 1;
         const affected = [activeNow.id];
         if (freshRoom.pendingWinnerId) affected.push(freshRoom.pendingWinnerId);
         applyLocalRuntime(freshRoom);
         updateHostHandsCache(freshHands, freshRoom.version);
         await persistBotPlayFast(currentRoomCode, freshRoom, freshHands[activeNow.id], activeNow.id, affected);
+        acted = true;
       }
     } finally {
       botActionInFlight = false;
+      if (acted) {
+        setTimeout(() => {
+          runHostAutomation().catch(err => console.error('Host automation error:', err));
+        }, 60);
+      }
     }
   }
 

@@ -593,38 +593,40 @@
     return { ok: true };
   }
 
+  function getLegalBotBids(room) {
+    const max = room.currentRound;
+    let bids = [];
+    for (let b = 0; b <= max; b++) bids.push(b);
+    if (!room.hookRule) return bids;
+
+    const totalBidsSoFar = room.players.reduce(
+      (sum, p) => sum + (p.currentBid !== null ? p.currentBid : 0),
+      0
+    );
+    const isLastBidder = room.players.filter(p => p.currentBid === null).length === 1;
+    if (isLastBidder) {
+      bids = bids.filter(b => totalBidsSoFar + b !== room.currentRound);
+    }
+    return bids.length > 0 ? bids : [0];
+  }
+
   function playBotCard(room, handsById, activePlayer) {
     const hand = handsById[activePlayer.id] || [];
     if (hand.length === 0) return null;
 
-    let cardIndex = 0;
-    if (room.currentTrick.length > 0) {
-      const ledSuit = getTrickLedSuit(room.currentTrick);
-      if (ledSuit) {
-        const followIndex = pickFollowSuitCardIndex(hand, ledSuit);
-        cardIndex = followIndex !== -1 ? followIndex : 0;
-      }
-    }
-
-    return hand[cardIndex].key;
+    const legal = hand.filter(c => canPlayCard(hand, c, room.currentTrick || [], room));
+    const pick = legal.length > 0 ? legal[0] : hand[0];
+    return pick.key;
   }
 
   function playBotBid(room) {
+    const legal = getLegalBotBids(room);
     const maxBid = room.currentRound;
     const avgBid = Math.round(maxBid / Math.max(room.players.length, 1));
     let bidVal = Math.max(0, Math.min(maxBid, avgBid + Math.floor(Math.random() * 3) - 1));
-
-    if (room.hookRule) {
-      const totalBidsSoFar = room.players.reduce((sum, p) => sum + (p.currentBid !== null ? p.currentBid : 0), 0);
-      const isLastBidder = room.players.filter(p => p.currentBid === null).length === 1;
-      if (isLastBidder && totalBidsSoFar + bidVal === room.currentRound) {
-        bidVal = (bidVal + 1) % (maxBid + 1);
-        if (totalBidsSoFar + bidVal === room.currentRound) {
-          bidVal = (bidVal + 1) % (maxBid + 1);
-        }
-      }
+    if (!legal.includes(bidVal)) {
+      bidVal = legal[Math.floor(Math.random() * legal.length)];
     }
-
     return bidVal;
   }
 
@@ -677,6 +679,7 @@
     playCard,
     playBotCard,
     playBotBid,
+    getLegalBotBids,
     hydrateRoom,
     resolveBotType,
     botTypeLabel,
