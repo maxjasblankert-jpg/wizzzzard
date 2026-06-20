@@ -615,17 +615,26 @@
     if (hand.length === 0) return null;
 
     const legal = hand.filter(c => canPlayCard(hand, c, room.currentTrick || [], room));
-    const pick = legal.length > 0 ? legal[0] : hand[0];
-    return pick.key;
+    if (legal.length === 0) return hand[0]?.key ?? null;
+
+    const rank = (value) => {
+      if (value === 1) return 0;
+      if (value === 15) return 200;
+      return value;
+    };
+    const sorted = [...legal].sort((a, b) => rank(a.value) - rank(b.value) || a.suit.localeCompare(b.suit));
+    return sorted[0].key;
   }
 
   function playBotBid(room) {
     const legal = getLegalBotBids(room);
     const maxBid = room.currentRound;
     const avgBid = Math.round(maxBid / Math.max(room.players.length, 1));
-    let bidVal = Math.max(0, Math.min(maxBid, avgBid + Math.floor(Math.random() * 3) - 1));
+    let bidVal = Math.max(0, Math.min(maxBid, avgBid));
     if (!legal.includes(bidVal)) {
-      bidVal = legal[Math.floor(Math.random() * legal.length)];
+      bidVal = legal.reduce((best, b) => (
+        Math.abs(b - avgBid) < Math.abs(best - avgBid) ? b : best
+      ), legal[0]);
     }
     return bidVal;
   }

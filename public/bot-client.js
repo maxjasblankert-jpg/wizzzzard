@@ -14,7 +14,8 @@
 
   function modelForBotType(botType) {
     if (botType === 'neural_v6') return 'v6';
-    if (botType === 'neural_v7_house') return 'v7_house';
+    // Render currently serves v7 only; house mode uses v7 with HOME trump mapping until v7_house is deployed.
+    if (botType === 'neural_v7_house') return 'v7';
     if (botType === 'neural_v7') return 'v7';
     return 'v7';
   }
@@ -107,8 +108,12 @@
     }));
 
     const legalActions = phase === 'bid'
-      ? rules.getLegalBidValues(room.currentRound)
+      ? (room.hookRule && Engine().getLegalBotBids
+        ? Engine().getLegalBotBids(room)
+        : rules.getLegalBidValues(room.currentRound))
       : getLegalCardIdsForBot(room, hand);
+
+    const playerCount = room.maxPlayers || room.playerCount || room.players?.length || 3;
 
     const handsPayload = {};
     handsPayload[String(seat)] = IdMap().mapAppIds(hand.map(c => c.id));
@@ -116,14 +121,14 @@
     return {
       protocol: 1,
       model: modelForBotType(botType),
-      num_players: room.playerCount,
+      num_players: playerCount,
       seat,
       phase,
       round: room.currentRound,
       trump: trumpInfo.trump,
       trump_card: trumpInfo.trumpCard,
       dealer: room.dealerIndex,
-      starter: (room.dealerIndex + 1) % room.playerCount,
+      starter: (room.dealerIndex + 1) % playerCount,
       hands: handsPayload,
       bids,
       taken,
@@ -133,7 +138,7 @@
     };
   }
 
-  async function callBotService(payload, timeoutMs = 8000) {
+  async function callBotService(payload, timeoutMs = 15000) {
     const url = `${Config().serviceUrl.replace(/\/$/, '')}/act`;
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const timer = controller
@@ -164,7 +169,9 @@
   async function playNeuralBotBid(room, handsById, playerId) {
     const payload = buildActPayload(room, handsById, playerId, 'bid');
     const result = await callBotService(payload);
-    return result.action;
+    const legal = Engine().getLegalBotBids(room);
+    if (legal.includes(result.action)) return result.action;
+    return legal[Math.floor(Math.random() * legal.length)];
   }
 
   async function playNeuralBotCard(room, handsById, playerId) {
