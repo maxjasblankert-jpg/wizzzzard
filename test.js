@@ -237,7 +237,10 @@ try {
   assert.strictEqual(Engine.resolveBotType({ isBot: true }, { mode: 'standard' }), 'neural_v7');
   assert.strictEqual(Engine.resolveBotType({ isBot: true, botType: 'heuristic' }, { mode: 'standard' }), 'heuristic');
   assert.strictEqual(Engine.resolveBotType({ isBot: true, botType: 'neural_v7_house' }, { mode: 'normal' }), 'neural_v7_house');
-  assert.strictEqual(Engine.botTypeLabel('neural_v7_house'), 'Champion v7 (HOME)');
+  assert.strictEqual(Engine.botTypeLabel('neural_v7_house'), 'Champion v7 HOME');
+  assert.strictEqual(Engine.normalizeAddBotType('neural_v7', 'normal'), 'neural_v7_house');
+  assert.strictEqual(Engine.normalizeAddBotType('neural_v7_house', 'standard'), 'neural_v7');
+  assert.strictEqual(Engine.defaultBotTypeForMode('normal'), 'neural_v7_house');
 
   console.log('✅ Test Case 13 Passed: collectSeenCardIds scoped to current round only.');
 

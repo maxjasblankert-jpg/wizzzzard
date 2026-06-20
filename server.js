@@ -360,10 +360,18 @@ wss.on('connection', (ws) => {
             return;
           }
 
-          const botType = data.botType || 'neural_v7';
+          let botType = data.botType || 'neural_v7';
+          if (room.mode === 'normal' && botType !== 'heuristic') {
+            botType = 'neural_v7_house';
+          } else if (room.mode === 'standard' && botType === 'neural_v7_house') {
+            botType = 'neural_v7';
+          } else if (room.mode === 'purple') {
+            botType = 'heuristic';
+          }
+
           if (botType === 'neural_v7_house') {
             if (room.mode !== 'normal') {
-              ws.send(JSON.stringify({ type: 'error', message: 'Champion v7 (HOME) requires HOME Rules mode.' }));
+              ws.send(JSON.stringify({ type: 'error', message: 'Champion v7 HOME requires HOME Rules mode.' }));
               return;
             }
           } else if (botType !== 'heuristic' && room.mode !== 'standard') {

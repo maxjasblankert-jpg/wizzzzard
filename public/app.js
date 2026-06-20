@@ -331,24 +331,30 @@ function switchLobbyTab(tab) {
   switchMainTab(tab);
 }
 
-function syncBotTypeSelect(mode) {
-  const botTypeSelect = document.getElementById('select-bot-type');
-  if (!botTypeSelect) return;
+const BOT_TYPE_OPTIONS = [
+  { value: 'neural_v7', label: 'Champion v7 Standard' },
+  { value: 'neural_v7_house', label: 'Champion v7 HOME' },
+  { value: 'heuristic', label: 'Practice Bot' }
+];
 
-  const isPurple = mode === 'purple';
+function renderBotTypeSelect(mode) {
+  const select = document.getElementById('select-bot-type');
+  if (!select || !window.GameEngine) return;
 
-  [...botTypeSelect.options].forEach(opt => {
-    opt.disabled = false;
-    if (opt.value === 'neural_v7' || opt.value === 'neural_v7_house') {
-      opt.hidden = isPurple;
-    } else {
-      opt.hidden = false;
-    }
+  const previous = select.value;
+  select.innerHTML = '';
+  BOT_TYPE_OPTIONS.forEach(opt => {
+    if (mode === 'purple' && opt.value !== 'heuristic') return;
+    const el = document.createElement('option');
+    el.value = opt.value;
+    el.textContent = opt.label;
+    select.appendChild(el);
   });
+  select.value = GameEngine.normalizeAddBotType(previous, mode);
+}
 
-  if (isPurple && botTypeSelect.value !== 'heuristic') {
-    botTypeSelect.value = 'heuristic';
-  }
+function syncBotTypeSelect(mode) {
+  renderBotTypeSelect(mode);
 }
 
 function updateModeWarning() {
@@ -839,7 +845,12 @@ function startGame() {
 }
 
 function addBot() {
-  const botType = document.getElementById('select-bot-type')?.value || 'neural_v7';
+  const mode = gameState?.mode || 'normal';
+  const requested = document.getElementById('select-bot-type')?.value;
+  const botType = window.GameEngine
+    ? GameEngine.normalizeAddBotType(requested, mode)
+    : (requested || 'neural_v7_house');
+
   if (gameState && botType !== 'heuristic' && window.BotClient) {
     const check = BotClient.neuralSetupValid({
       mode: gameState.mode,

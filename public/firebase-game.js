@@ -863,7 +863,6 @@
     },
 
     async addBot(data = {}) {
-      const botType = data.botType || 'neural_v7';
       const code = currentRoomCode;
       const roomDoc = (await roomDocRef(code).get()).data();
       if (!roomDoc || roomDoc.status !== 'lobby') return;
@@ -875,6 +874,8 @@
         fail('Lobby is already full.');
         return;
       }
+
+      const botType = Engine().normalizeAddBotType(data.botType, roomDoc.mode);
 
       if (botType !== 'heuristic' && global.BotClient) {
         const check = global.BotClient.neuralSetupValid({

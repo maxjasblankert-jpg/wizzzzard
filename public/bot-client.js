@@ -23,10 +23,10 @@
     const n = room.playerCount || room.players?.length || 0;
     if (botType === 'neural_v7_house') {
       if (!room || room.mode !== 'normal') {
-        return { ok: false, message: 'Champion v7 (HOME) requires HOME Rules mode.' };
+        return { ok: false, message: 'Champion v7 HOME requires HOME Rules mode.' };
       }
       if (n !== 3 && n !== 4) {
-        return { ok: false, message: 'Champion v7 (HOME) supports 3 or 4 players.' };
+        return { ok: false, message: 'Champion v7 HOME supports 3 or 4 players.' };
       }
       return { ok: true };
     }

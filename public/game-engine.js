@@ -200,19 +200,37 @@
     if (room.hostVoiceLog.length > 50) room.hostVoiceLog.shift();
   }
 
+  function defaultBotTypeForMode(mode) {
+    if (mode === 'standard') return 'neural_v7';
+    if (mode === 'normal') return 'neural_v7_house';
+    return 'heuristic';
+  }
+
+  function normalizeAddBotType(requested, mode) {
+    if (!requested || requested === 'heuristic') return 'heuristic';
+    if (mode === 'purple') return 'heuristic';
+    if (mode === 'normal') return 'neural_v7_house';
+    if (mode === 'standard') {
+      if (requested === 'neural_v6') return 'neural_v6';
+      return 'neural_v7';
+    }
+    return defaultBotTypeForMode(mode);
+  }
+
   function resolveBotType(meta, room) {
     if (!meta?.isBot) return null;
     if (meta.botType === 'heuristic') return 'heuristic';
     if (meta.botType === 'neural_v6' || meta.botType === 'neural_v7' || meta.botType === 'neural_v7_house') {
       return meta.botType;
     }
-    return isStandardMode(room?.mode) ? 'neural_v7' : 'heuristic';
+    return defaultBotTypeForMode(room?.mode);
   }
 
   function botTypeLabel(botType) {
     if (botType === 'heuristic') return 'Practice';
     if (botType === 'neural_v6') return 'Champion v6';
-    if (botType === 'neural_v7_house') return 'Champion v7 (HOME)';
+    if (botType === 'neural_v7_house') return 'Champion v7 HOME';
+    if (botType === 'neural_v7') return 'Champion v7 Standard';
     return 'Champion v7';
   }
 
@@ -618,7 +636,7 @@
     playerDocs.forEach(doc => {
       const meta = { ...doc };
       if (meta.isBot && !meta.botType) {
-        meta.botType = isStandardMode(room.mode) ? 'neural_v7' : 'heuristic';
+        meta.botType = defaultBotTypeForMode(room.mode);
       }
       room.playersById[doc.id] = meta;
     });
@@ -661,6 +679,8 @@
     playBotBid,
     hydrateRoom,
     resolveBotType,
-    botTypeLabel
+    botTypeLabel,
+    defaultBotTypeForMode,
+    normalizeAddBotType
   };
 })(typeof window !== 'undefined' ? window : global);
