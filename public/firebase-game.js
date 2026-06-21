@@ -63,6 +63,7 @@
       score: p.score,
       roundScores: p.roundScores || [],
       isBot: !!p.isBot,
+      botType: p.botType || storedMeta.botType || null,
       order: room.playerIds.indexOf(p.id),
       handSize: p.handSize != null ? p.handSize : (p.hand || []).length
     };
@@ -450,6 +451,9 @@
         const newJobCard = Engine().pickJobCard(fullDeck, room.jobCardHistory);
         room.jobCard = newJobCard;
         room.trumpSuit = Engine().resolveTrumpSuit(newJobCard);
+        room.trumpSuitIndex = newJobCard?.id != null && newJobCard.value >= 2 && newJobCard.value <= 14
+          ? global.StandardRules.cardSuit(newJobCard.id)
+          : null;
         if (!room.jobCardHistory.includes(newJobCard.key)) {
           room.jobCardHistory.push(newJobCard.key);
         }
@@ -984,6 +988,9 @@
         const jobCard = Engine().pickJobCard(fullDeck, []);
         room.jobCard = jobCard;
         room.trumpSuit = Engine().resolveTrumpSuit(jobCard);
+        room.trumpSuitIndex = jobCard?.id != null && jobCard.value >= 2 && jobCard.value <= 14
+          ? global.StandardRules.cardSuit(jobCard.id)
+          : null;
         room.jobCardHistory = [jobCard.key];
         Engine().announce(room, Engine().formatTrumpAnnouncement(jobCard));
         Engine().startRound(room, handsById);

@@ -57,7 +57,7 @@
     }
     const job = room.jobCard;
     if (!job || job.id == null) return { trump: -1, trumpCard: -1 };
-    const trump = (job.value >= 2 && job.value <= 14) ? job.suit : -1;
+    const trump = (job.value >= 2 && job.value <= 14) ? SR().cardSuit(job.id) : -1;
     return {
       trump,
       trumpCard: IdMap().appCardIdToBotId(job.id)
@@ -169,8 +169,9 @@
   async function playNeuralBotBid(room, handsById, playerId) {
     const payload = buildActPayload(room, handsById, playerId, 'bid');
     const result = await callBotService(payload);
+    const bidVal = Number(result.action);
     const legal = Engine().getLegalBotBids(room);
-    if (legal.includes(result.action)) return result.action;
+    if (Number.isInteger(bidVal) && legal.includes(bidVal)) return bidVal;
     return legal[Math.floor(Math.random() * legal.length)];
   }
 
