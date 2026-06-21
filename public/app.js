@@ -345,6 +345,7 @@ function renderBotTypeSelect(mode) {
   select.innerHTML = '';
   BOT_TYPE_OPTIONS.forEach(opt => {
     if (mode === 'purple' && opt.value !== 'heuristic') return;
+    if (mode === 'caca' && opt.value !== 'heuristic') return;
     const el = document.createElement('option');
     el.value = opt.value;
     el.textContent = opt.label;
@@ -363,10 +364,15 @@ function updateModeWarning() {
   const neuralHint = document.getElementById('neural-setup-hint');
   const hookCheck = document.getElementById('check-hook-rule');
 
+  const cacaHint = document.getElementById('caca-mode-hint');
+
   if (selectMode === 'purple') {
     warning.classList.remove('hidden');
   } else {
     warning.classList.add('hidden');
+  }
+  if (cacaHint) {
+    cacaHint.classList.toggle('hidden', selectMode !== 'caca');
   }
 
   const isStandard = selectMode === 'standard';

@@ -242,6 +242,8 @@ try {
   assert.strictEqual(Engine.normalizeAddBotType('neural_v7_house', 'standard'), 'neural_v7');
   assert.strictEqual(Engine.defaultBotTypeForMode('normal'), 'neural_v7_house');
 
+  assert.strictEqual(Engine.defaultBotTypeForMode('caca'), 'heuristic');
+
   console.log('✅ Test Case 13 Passed: collectSeenCardIds scoped to current round only.');
 
   console.log('\n🌟 ALL UNIT TESTS PASSED SUCCESSFULLY! 🌟');

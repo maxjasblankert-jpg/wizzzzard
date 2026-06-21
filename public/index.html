@@ -68,6 +68,7 @@
             <select id="select-game-mode" onchange="updateModeWarning()">
               <option value="standard" selected>Standard (ML bots)</option>
               <option value="normal">HOME Rules</option>
+              <option value="caca">Caca All 15</option>
               <option value="purple">Purple (5 suits)</option>
             </select>
           </div>
@@ -76,6 +77,10 @@
         <div id="neural-setup-hint" class="warning-text">
           <span id="neural-hint-standard">Champion v7 Standard needs <strong>Standard (Official)</strong> mode and <strong>Hook Rule off</strong> — strongest play (3 or 4 players).</span>
           <span id="neural-hint-house" class="hidden">Champion v7 HOME works in <strong>HOME Rules</strong> (3 or 4 players). Uses the v7 engine with job-card trump — good, but not as strong as Standard mode.</span>
+        </div>
+
+        <div id="caca-mode-hint" class="warning-text hidden">
+          🧙 <strong>Caca All 15</strong> — each round the player left of the dealer gets all four Wizards (15s). HOME Rules + Job Card trump. Practice bots only.
         </div>
 
         <div id="purple-mode-warning" class="warning-text hidden">

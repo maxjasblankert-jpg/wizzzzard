@@ -67,7 +67,7 @@
   function collectSeenForPayload(room, handsById) {
     const rules = SR();
     const seen = new Set(rules.collectSeenCardIds(room, handsById));
-    if (room.mode === 'normal' && room.jobCard?.id != null) {
+    if ((room.mode === 'normal' || room.mode === 'caca') && room.jobCard?.id != null) {
       seen.add(room.jobCard.id);
     }
     return [...seen];
@@ -88,7 +88,7 @@
     const botType = global.GameEngine?.resolveBotType?.(player, room) || player?.botType || 'neural_v7';
     if (botType === 'neural_v7_house') {
       if (room.mode !== 'normal') {
-        throw new Error('Champion v7 (HOME) requires HOME Rules mode');
+        throw new Error('Champion v7 HOME requires HOME Rules mode');
       }
     } else if (room.mode !== 'standard') {
       throw new Error('Champion bots require Standard (Official) mode');

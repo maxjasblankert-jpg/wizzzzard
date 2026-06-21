@@ -25,7 +25,7 @@
   }
 
   function createDeck(mode) {
-    if (isStandardMode(mode) || mode === 'normal') {
+    if (isStandardMode(mode) || mode === 'normal' || mode === 'caca') {
       return getStandardRules().createStandardDeck();
     }
     const suitsToUse = ['green', 'blue', 'red', 'yellow'];
@@ -128,6 +128,10 @@
     return mode === 'standard';
   }
 
+  function isHomeStyleMode(mode) {
+    return mode === 'normal' || mode === 'caca';
+  }
+
   function getStandardRules() {
     return global.StandardRules;
   }
@@ -203,12 +207,13 @@
   function defaultBotTypeForMode(mode) {
     if (mode === 'standard') return 'neural_v7';
     if (mode === 'normal') return 'neural_v7_house';
+    if (mode === 'caca') return 'heuristic';
     return 'heuristic';
   }
 
   function normalizeAddBotType(requested, mode) {
     if (!requested || requested === 'heuristic') return 'heuristic';
-    if (mode === 'purple') return 'heuristic';
+    if (mode === 'purple' || mode === 'caca') return 'heuristic';
     if (mode === 'normal') return 'neural_v7_house';
     if (mode === 'standard') {
       if (requested === 'neural_v6') return 'neural_v6';
@@ -333,9 +338,62 @@
     announce(room, `Round ${room.currentRound} started. Dealer is ${dealer.name}. ${firstBidder.name}, you bid first.`);
   }
 
+  function startCacaRound(room, handsById) {
+    room.players.forEach(p => {
+      p.tricksWon = 0;
+      p.currentBid = null;
+      handsById[p.id] = [];
+    });
+
+    room.currentTrick = [];
+    room.trickTransitionUntil = null;
+    room.trickWinnerHistory = [];
+
+    const excludedKeys = new Set([
+      ...(room.jobCardHistory || []),
+      room.jobCard?.key
+    ].filter(Boolean));
+
+    let deck = createDeck(room.mode);
+    deck = deck.filter(c => !excludedKeys.has(c.key));
+    deck = shuffle(deck);
+
+    const wizards = deck.filter(c => c.value === 15);
+    let nonWizards = deck.filter(c => c.value !== 15);
+    const numCards = room.currentRound;
+    const cacaIndex = (room.dealerIndex + 1) % room.playerCount;
+    room.cacaPlayerIndex = cacaIndex;
+
+    for (let i = 0; i < numCards; i++) {
+      for (const p of room.players) {
+        if (nonWizards.length === 0) break;
+        handsById[p.id].push(nonWizards.pop());
+      }
+    }
+
+    const cacaPlayer = room.players[cacaIndex];
+    wizards.forEach(w => handsById[cacaPlayer.id].push(w));
+
+    room.players.forEach(p => {
+      handsById[p.id] = sortHand(handsById[p.id]);
+    });
+
+    room.status = 'bidding';
+    room.activePlayerIndex = cacaIndex;
+
+    const dealer = room.players[room.dealerIndex];
+    announce(room, `🧙 ${cacaPlayer.name} is Caca this round — all four Wizards (15s)!`);
+    announce(room, `Round ${room.currentRound} started. Dealer is ${dealer.name}. ${cacaPlayer.name}, you bid first.`);
+  }
+
   function startRound(room, handsById) {
     if (isStandardMode(room.mode)) {
       startStandardRound(room, handsById);
+      return;
+    }
+
+    if (room.mode === 'caca') {
+      startCacaRound(room, handsById);
       return;
     }
 
@@ -663,6 +721,7 @@
     createDeck,
     shuffle,
     isStandardMode,
+    isHomeStyleMode,
     getTrickLedSuit,
     resolveTrick,
     getRoundsCount,

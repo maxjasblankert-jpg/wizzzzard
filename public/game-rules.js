@@ -3,6 +3,7 @@
   const MODE_LABELS = {
     standard: 'Standard (Official)',
     normal: 'HOME Rules',
+    caca: 'Caca All 15',
     purple: 'Purple Mode'
   };
 
@@ -105,6 +106,40 @@
             'Champion v7 (HOME) supports 3 or 4 players.',
             'Champion v7 (Standard) and v6 require <strong>Standard</strong> mode.'
           ]
+        }
+      ]
+    },
+    caca: {
+      title: 'Caca All 15',
+      subtitle: '60 cards · HOME rules · one player gets all Wizards',
+      sections: [
+        {
+          heading: 'Deck & deal',
+          items: [
+            ...SHARED_DECK,
+            'Same 60-card deck and Job Card trump as <strong>HOME Rules</strong>.',
+            'Each round the player left of the dealer is <strong>Caca</strong> and receives <strong>all four 15s (Wizards)</strong> on top of their normal deal.'
+          ]
+        },
+        {
+          heading: 'Trump (Job Card)',
+          items: [
+            'Same as HOME Rules — random Job Card each round.',
+            'Colored Job Card (<strong>2–14</strong>) → that suit is trump.',
+            'Job Card <strong>1</strong> or <strong>15</strong> → no trump.'
+          ]
+        },
+        {
+          heading: 'Tricks & scoring',
+          items: [
+            'Same trick and scoring rules as HOME Rules.',
+            '<strong>Hook Rule</strong> optional.'
+          ]
+        },
+        {
+          heading: 'Bots',
+          items: [
+            'Practice bots only — chaos mode for humans!'
           ]
         }
       ]

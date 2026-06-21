@@ -365,7 +365,7 @@ wss.on('connection', (ws) => {
             botType = 'neural_v7_house';
           } else if (room.mode === 'standard' && botType === 'neural_v7_house') {
             botType = 'neural_v7';
-          } else if (room.mode === 'purple') {
+          } else if (room.mode === 'purple' || room.mode === 'caca') {
             botType = 'heuristic';
           }
 
